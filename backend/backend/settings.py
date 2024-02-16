@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-2bue2^#kdykf)&6(wzd3j46djnd4f3h23$!2+3l4)o#9q#^di&"
+SECRET_KEY = "django-insecure-(krydpw06a2wtrg(0alb$*yld!(w7m6(&r0dc)05o46l-q1t!#"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -76,7 +76,11 @@ WSGI_APPLICATION = "backend.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "NAME": "hackathon_db",
+        "USER": "kgpian",
+        "PASSWORD": "kgpian",
+        "HOST": "localhost",
+        "PORT": "5432",   
     }
 }
 
