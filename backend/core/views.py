@@ -13,11 +13,14 @@ def signupView(request):
         request_data = json.loads(request_data_str)
         username = request_data.get('username')
         password = request_data.get('password')
-        print(type(password))
-        print(password)
         email = request_data.get('email')
+        role = request_data.get('role')
         user = User.objects.create_user(username=username, password=password, email=email)
-        community_manager = Manager.objects.create(user=user)
+
+        if role == 'participant':
+            participant = Participant.objects.create(user=user)
+        else:
+            manager = Manager.objects.create(user=user)
         # login(request, community_manager)
         return HttpResponse('Signed up successfully')
     return HttpResponse('Signup Page')
@@ -33,10 +36,6 @@ def loginView(request):
         password = request_data.get('password')
         email = request_data.get('email')
         
-        print("Username:", username)
-        print("Password:", password)
-        print("Email:", email)
-
         try:
             user = User.objects.get(email=email)
         except:
