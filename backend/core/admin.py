@@ -1,6 +1,6 @@
 from django.contrib import admin
-from .models import Participant, CommunityManager
+from .models import Participant, Manager
 
 admin.site.register(Participant)
-admin.site.register(CommunityManager)
+admin.site.register(Manager)
 # admin.site.register(Admin)
