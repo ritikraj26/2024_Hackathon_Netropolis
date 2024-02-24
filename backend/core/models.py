@@ -1,62 +1,76 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
-from django.utils.translation import gettext_lazy as _
-
-class User(AbstractUser):
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
-    password = models.CharField(max_length=100)
-    region = models.CharField(max_length=100, null=True, blank=True)
-    date_of_birth = models.DateField(null=True, blank=True)
-    date_joined = models.DateTimeField(auto_now_add=True)
-    last_login = models.DateTimeField(auto_now=True)
-    is_active = models.BooleanField(default=True)
-    is_superuser = models.BooleanField(default=False)
-   
-
-class Participant(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="participant")
-    field_of_specialization = models.CharField(max_length=100, null=True, blank=True)
-    quests_and_regions_completed = models.JSONField(null=True, blank=True)
-    contribution_points = models.IntegerField(default=0)
-
-    groups = models.ManyToManyField(Group, related_name="participants")
-    user_permissions = models.ManyToManyField(Permission, related_name="participants")
-
-    class Meta:
-        verbose_name = "Participant"
-        verbose_name_plural = "Participants"
-    
-    def __str__(self):
-        return self.username
-    
-    def save(self, *args, **kwargs):
-        self.is_staff = False
-        self.is_superuser = False
-        self.is_active = True
-        super().save(*args, **kwargs)
 
 
-class Manager(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="community_manager")
-    age = models.IntegerField(null=True, blank=True)
-    groups = models.ManyToManyField(Group, related_name="community_managers")
-    user_permissions = models.ManyToManyField(Permission, related_name="community_managers")
-    
+# User Part
+class User(models.Model):
+    uuid = models.UUIDField()
+    username = models.CharField(max_length = 100, unique = True)
+    first_name = models.CharField(max_length = 100)
+    last_name = models.CharField(max_length = 100)
+    age = models.IntegerField()
+    hobby = models.CharField(max_length = 100)
+    job = models.CharField(max_length = 100)
+    roleId = models.IntegerField(default = 3)
 
-    class Meta:
-        verbose_name = "Manager"
-        verbose_name_plural = "Managers"
-    
-    def __str__(self):
-        return self.username
-    
-    def save(self, *args, **kwargs):
-        self.is_staff = True
-        self.is_superuser = False
-        self.is_active = True
-        super().save(*args, **kwargs)
+
+class CommunityManager(models.Model):
+    uuid = models.UUIDField()
+    username = models.CharField(max_length = 100, unique = True)
+    first_name = models.CharField(max_length = 100)
+    last_name = models.CharField(max_length = 100)
+    age = models.IntegerField()
+    orgName = models.CharField(max_length = 100)
+    roleId = models.IntegerField(default = 2)
+    locationId = models.IntegerField()
+
+
+class Role(models.Model):
+    id = models.AutoField(primary_key = True)
+    name = models.CharField(max_length = 100)
+
+
+class Gender(models.Model):
+    id = models.AutoField(primary_key = True)
+    name = models.CharField(max_length = 100)
+
+
+class Category(models.Model):
+    id = models.AutoField(primary_key = True)
+    name = models.CharField(max_length = 100)
+
+
+class LocationType(models.Model):
+    id = models.AutoField(primary_key = True)
+    name = models.CharField(max_length = 100)
+
+
+class Location(models.Model):
+    id = models.AutoField(primary_key = True)
+    name = models.CharField(max_length = 100)
+    locationTypeId = models.IntegerField()
 
 
 
+# Quest Part  
+class Quest(models.Model):
+    id = models.AutoField(primary_key = True)
+    name = models.CharField(max_length = 100)
+    description = models.CharField(max_length = 100)
+    days = models.IntegerField()
+    maxParticipants = models.IntegerField()
+
+
+class Task(models.Model):
+    id = models.AutoField(primary_key = True)
+    name = models.CharField(max_length = 100)
+    description = models.CharField(max_length = 100)
+    categoryId = models.IntegerField()
+    locationId = models.IntegerField()
+
+
+class QuestTask(models.Model):
+    id = models.AutoField(primary_key = True)
+    dayNumber = models.IntegerField()
+    questId = models.IntegerField()
+    taskId = models.IntegerField()
