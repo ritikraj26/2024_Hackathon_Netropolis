@@ -18,7 +18,7 @@ code {
 
 /* Scroll bar stylings */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 0px;
   height: 10px;
 }
 
@@ -30,10 +30,10 @@ code {
 /* Handle */
 ::-webkit-scrollbar-thumb {
   border-radius: 3px;
-  background: #4d4dc7;
+  background: #2563eb;
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: #32357d;
+  background: #2563eb;
 }
