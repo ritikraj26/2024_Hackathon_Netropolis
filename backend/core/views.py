@@ -343,13 +343,19 @@ def get_task_by_location(request, pk):
 
 
 @csrf_exempt
-def get_task_by_category(request):
+def get_task_by_category(request, pk):
     if request.method == "GET":
-        request_data_str = request.body.decode("utf-8")
-        request_data = json.loads(request_data_str)
-        name = request_data.get("name")
-        category = Category.objects.get(name=name)
+        category = Category.objects.get(uuid=pk)
         tasks = Task.objects.filter(category=category.uuid)
+        serialized_tasks = Task_Serializer(tasks, many=True)
+        return JsonResponse(serialized_tasks.data, safe=False)
+
+
+@csrf_exempt
+def get_task_by_location_type(request, pk):
+    if request.method == "GET":
+        location_type = Location_Type.objects.get(uuid=pk)
+        tasks = Task.objects.filter(location_type=location_type.uuid)
         serialized_tasks = Task_Serializer(tasks, many=True)
         return JsonResponse(serialized_tasks.data, safe=False)
 
@@ -366,8 +372,18 @@ def create_quest(request):
         location_name = request_data.get("location_name")
         creator_uuid = request_data.get("creator_uuid")
 
-        location = Location.objects.get(name=location_name)
-        created_by = Participant.objects.get(uuid=creator_uuid)
+        try:
+            location = Location.objects.get(name=location_name)
+        except Location.DoesNotExist:
+            return HttpResponse("Location does not exist", status=400)
+        except Location.MultipleObjectsReturned:
+            return HttpResponse("Multiple Locations with same name", status=400)
+
+        try:
+            creator = Participant.objects.get(uuid=creator_uuid)
+        except Participant.DoesNotExist:
+            return HttpResponse("Creator does not exist", status=400)
+
         quest_uuid = uuid.uuid4()
 
         total_points = 0
@@ -377,7 +393,12 @@ def create_quest(request):
 
         for task in tasks:
             task_uuid = task.get("uuid")
-            task = Task.objects.get(uuid=task_uuid)
+
+            try:
+                task = Task.objects.get(uuid=task_uuid)
+            except Task.DoesNotExist:
+                return HttpResponse("Task does not exist", status=400)
+
             total_points += task.points
             total_duration += task.duration
 
@@ -387,12 +408,11 @@ def create_quest(request):
             description=description,
             max_people=max_people,
             location=location,
-            created_by=created_by,
+            created_by=creator,
             total_points=total_points,
             total_duration=total_duration,
         )
 
-        print(quest)
         for task in tasks:
             task_uuid = task.get("uuid")
             day_number = task.get("day_number")
@@ -412,7 +432,178 @@ def create_quest(request):
 @csrf_exempt
 def get_quest_by_location(request, pk):
     if request.method == "GET":
-        location = Location.objects.get(name=pk)
+
+        try:
+            location = Location.objects.get(uuid=pk)
+        except Location.DoesNotExist:
+            return HttpResponse("Location does not exist", status=400)
+
         quests = Quest.objects.filter(location=location.uuid)
-        serialized_quests = Quest_Serializer(quests, many=True)
-        return JsonResponse(serialized_quests.data, safe=False)
+
+        serialized_data = []
+        serialized_task = []
+        for quest in quests:
+            quest_tasks = Quest_Task.objects.filter(quest=quest)
+            for quest_task in quest_tasks:
+                serialized_task.append(
+                    {
+                        "task_uuid": quest_task.task.uuid,
+                        "task_name": quest_task.task.name,
+                        "task_description": quest_task.task.description,
+                        "task_points": quest_task.task.points,
+                        "task_duration": quest_task.task.duration,
+                        "day_number": quest_task.day_number,
+                    }
+                )
+        serialized_data.append(
+            {
+                "quest_uuid": quest.uuid,
+                "quest_name": quest.name,
+                "quest_description": quest.description,
+                "quest_total_points": quest.total_points,
+                "quest_total_duration": quest.total_duration,
+                "quest_max_people": quest.max_people,
+                "location": quest.location.name,
+                "tasks": serialized_task,
+            }
+        )
+
+        return JsonResponse(serialized_data, safe=False)
+
+
+@csrf_exempt
+def get_quest_by_category(request, pk):
+    if request.method == "GET":
+
+        try:
+            category = Category.objects.get(uuid=pk)
+        except Category.DoesNotExist:
+            return HttpResponse("Category does not exist", status=400)
+
+        tasks = Task.objects.filter(category=category.uuid)
+
+        quests = []
+        for task in tasks:
+            quest_tasks = Quest_Task.objects.filter(task=task)
+            for quest_task in quest_tasks:
+                quests.append(quest_task.quest)
+
+        serialized_data = []
+        serialized_task = []
+        for quest in quests:
+            quest_tasks = Quest_Task.objects.filter(quest=quest)
+            for quest_task in quest_tasks:
+                serialized_task.append(
+                    {
+                        "task_uuid": quest_task.task.uuid,
+                        "task_name": quest_task.task.name,
+                        "task_description": quest_task.task.description,
+                        "task_points": quest_task.task.points,
+                        "task_duration": quest_task.task.duration,
+                        "day_number": quest_task.day_number,
+                    }
+                )
+        serialized_data.append(
+            {
+                "quest_uuid": quest.uuid,
+                "quest_name": quest.name,
+                "quest_description": quest.description,
+                "quest_total_points": quest.total_points,
+                "quest_total_duration": quest.total_duration,
+                "quest_max_people": quest.max_people,
+                "location": quest.location.name,
+                "tasks": serialized_task,
+            }
+        )
+
+        return JsonResponse(serialized_data, safe=False)
+
+
+@csrf_exempt
+def get_quest_by_location_type(request, pk):
+    if request.method == "GET":
+
+        try:
+            location_type = Location_Type.objects.get(uuid=pk)
+        except Location_Type.DoesNotExist:
+            return HttpResponse("Location Type does not exist", status=400)
+
+        tasks = Task.objects.filter(location_type=location_type.uuid)
+
+        quests = []
+        for task in tasks:
+            quest_tasks = Quest_Task.objects.filter(task=task)
+            for quest_task in quest_tasks:
+                quests.append(quest_task.quest)
+
+        serialized_data = []
+        serialized_task = []
+        for quest in quests:
+            quest_tasks = Quest_Task.objects.filter(quest=quest)
+            for quest_task in quest_tasks:
+                serialized_task.append(
+                    {
+                        "task_uuid": quest_task.task.uuid,
+                        "task_name": quest_task.task.name,
+                        "task_description": quest_task.task.description,
+                        "task_points": quest_task.task.points,
+                        "task_duration": quest_task.task.duration,
+                        "day_number": quest_task.day_number,
+                    }
+                )
+        serialized_data.append(
+            {
+                "quest_uuid": quest.uuid,
+                "quest_name": quest.name,
+                "quest_description": quest.description,
+                "quest_total_points": quest.total_points,
+                "quest_total_duration": quest.total_duration,
+                "quest_max_people": quest.max_people,
+                "location": quest.location.name,
+                "tasks": serialized_task,
+            }
+        )
+
+        return JsonResponse(serialized_data, safe=False)
+
+
+@csrf_exempt
+def get_quest_by_user(request, pk):
+    if request.method == "GET":
+
+        try:
+            user = Participant.objects.get(uuid=pk)
+        except Participant.DoesNotExist:
+            return HttpResponse("User does not exist", status=400)
+
+        quests = Quest.objects.filter(created_by=user)
+
+        serialized_data = []
+        serialized_task = []
+        for quest in quests:
+            quest_tasks = Quest_Task.objects.filter(quest=quest)
+            for quest_task in quest_tasks:
+                serialized_task.append(
+                    {
+                        "task_uuid": quest_task.task.uuid,
+                        "task_name": quest_task.task.name,
+                        "task_description": quest_task.task.description,
+                        "task_points": quest_task.task.points,
+                        "task_duration": quest_task.task.duration,
+                        "day_number": quest_task.day_number,
+                    }
+                )
+        serialized_data.append(
+            {
+                "quest_uuid": quest.uuid,
+                "quest_name": quest.name,
+                "quest_description": quest.description,
+                "quest_total_points": quest.total_points,
+                "quest_total_duration": quest.total_duration,
+                "quest_max_people": quest.max_people,
+                "location": quest.location.name,
+                "tasks": serialized_task,
+            }
+        )
+
+        return JsonResponse(serialized_data, safe=False)
