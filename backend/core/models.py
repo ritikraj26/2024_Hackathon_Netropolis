@@ -1,76 +1,140 @@
+import uuid
 from django.db import models
-from django.contrib.auth.models import AbstractUser, Group, Permission
-
-
-# User Part
-class User(models.Model):
-    uuid = models.UUIDField()
-    username = models.CharField(max_length = 100, unique = True)
-    first_name = models.CharField(max_length = 100)
-    last_name = models.CharField(max_length = 100)
-    age = models.IntegerField()
-    hobby = models.CharField(max_length = 100)
-    job = models.CharField(max_length = 100)
-    roleId = models.IntegerField(default = 3)
-
-
-class CommunityManager(models.Model):
-    uuid = models.UUIDField()
-    username = models.CharField(max_length = 100, unique = True)
-    first_name = models.CharField(max_length = 100)
-    last_name = models.CharField(max_length = 100)
-    age = models.IntegerField()
-    orgName = models.CharField(max_length = 100)
-    roleId = models.IntegerField(default = 2)
-    locationId = models.IntegerField()
-
-
-class Role(models.Model):
-    id = models.AutoField(primary_key = True)
-    name = models.CharField(max_length = 100)
-
-
-class Gender(models.Model):
-    id = models.AutoField(primary_key = True)
-    name = models.CharField(max_length = 100)
-
-
-class Category(models.Model):
-    id = models.AutoField(primary_key = True)
-    name = models.CharField(max_length = 100)
-
-
-class LocationType(models.Model):
-    id = models.AutoField(primary_key = True)
-    name = models.CharField(max_length = 100)
+from django.contrib.auth.models import User, AbstractUser, AbstractBaseUser, Group, Permission
 
 
 class Location(models.Model):
-    id = models.AutoField(primary_key = True)
-    name = models.CharField(max_length = 100)
-    locationTypeId = models.IntegerField()
+    uuid = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
+    name = models.CharField(max_length=150)
+    description = models.TextField()
 
 
+class Participant(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    uuid = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
+    email = models.EmailField(max_length=150, unique=True)
+    first_name = models.CharField(max_length=150)
+    last_name = models.CharField(max_length=150)
 
-# Quest Part  
-class Quest(models.Model):
-    id = models.AutoField(primary_key = True)
-    name = models.CharField(max_length = 100)
-    description = models.CharField(max_length = 100)
-    days = models.IntegerField()
-    maxParticipants = models.IntegerField()
+    role = models.CharField(max_length=150, blank=True, null=True)
+    gender = models.CharField(max_length=150, blank=True, null=True)
+
+    age = models.PositiveIntegerField(null=True, blank=True)
+    hobby = models.CharField(max_length=150, blank=True, null=True)
+    job = models.CharField(max_length=150, blank=True, null=True)
+    location = models.ForeignKey(Location, on_delete=models.CASCADE)
+    organization = models.CharField(max_length=150, blank=True, null=True)
+    points = models.PositiveIntegerField(default=0, blank=True, null=True)
+
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    date_joined = models.DateTimeField(auto_now_add=True)
+    last_login = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.email
+
+    class Meta:
+        verbose_name = "Participant"
+        verbose_name_plural = "Participants"
+
+
+class Category(models.Model):
+    uuid = models.UUIDField(primary_key=True, editable=False)
+    name = models.CharField(max_length=150)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Category"
+        verbose_name_plural = "Categories"
+
+
+class Location_Type(models.Model):
+    uuid = models.UUIDField(primary_key=True, editable=False)
+    name = models.CharField(max_length=150)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Location Type"
+        verbose_name_plural = "Location Types"
 
 
 class Task(models.Model):
-    id = models.AutoField(primary_key = True)
-    name = models.CharField(max_length = 100)
-    description = models.CharField(max_length = 100)
-    categoryId = models.IntegerField()
-    locationId = models.IntegerField()
+    uuid = models.UUIDField(primary_key=True, editable=False)
+    name = models.CharField(max_length=150)
+    description = models.TextField()
+    points = models.PositiveIntegerField()
+    duration = models.PositiveIntegerField()
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    location = models.ForeignKey(Location, on_delete=models.CASCADE)
+    location_type = models.ForeignKey(Location_Type, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Task"
+        verbose_name_plural = "Tasks"
 
 
-class QuestTask(models.Model):
-    id = models.AutoField(primary_key = True)
-    dayNumber = models.IntegerField()
-    questId = models.IntegerField()
-    taskId = models.IntegerField()
+class Quest(models.Model):
+    uuid = models.UUIDField(primary_key=True, editable=False)
+    name = models.CharField(max_length=150)
+    description = models.TextField()
+    total_points = models.PositiveIntegerField()
+    total_duration = models.PositiveIntegerField()
+    max_people = models.PositiveIntegerField()
+    location = models.ForeignKey(Location, on_delete=models.CASCADE)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(Participant, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Quest"
+        verbose_name_plural = "Quests"
+
+
+class Quest_Task(models.Model):
+    uuid = models.UUIDField(primary_key=True, editable=False)
+    day_number = models.PositiveIntegerField()
+    quest = models.ForeignKey(Quest, on_delete=models.CASCADE)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_completed = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.quest.name} - {self.task.name}"
+
+    class Meta:
+        verbose_name = "Quest Task"
+        verbose_name_plural = "Quest Tasks"
+
+
+class User_Quest(models.Model):
+    uuid = models.UUIDField(primary_key=True, editable=False)
+    user = models.ForeignKey(Participant, on_delete=models.CASCADE)
+    quest = models.ForeignKey(Quest, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_completed = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.user.email} - {self.quest.name}"
+
+    class Meta:
+        verbose_name = "User Quest"
+        verbose_name_plural = "User Quests"
+
+
+

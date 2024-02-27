@@ -22,14 +22,13 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    "core",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    
+    "core",
 ]
 
 MIDDLEWARE = [
@@ -76,12 +75,13 @@ WSGI_APPLICATION = "backend.wsgi.application"
 #     }
 # }
 
-# trial
+
+# Supabase
 # DATABASES = {
 #     "default": {
 #         "ENGINE": "django.db.backends.postgresql",
 #         "NAME": "postgres",
-#         "USER": "postgres.lwojmawvcshsjivpyhuq",
+#         "USER": "postgres.hadxbkzlrrnmahaylxff",
 #         "PASSWORD": "Netropolis@2024",
 #         "HOST": "aws-0-ap-south-1.pooler.supabase.com",
 #         "PORT": "5432",
@@ -89,13 +89,14 @@ WSGI_APPLICATION = "backend.wsgi.application"
 # }
 
 
+# Postgres
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "postgres",
-        "USER": "postgres.hadxbkzlrrnmahaylxff",
-        "PASSWORD": "Netropolis@2024",
-        "HOST": "aws-0-ap-south-1.pooler.supabase.com",
+        "NAME": "netropolis_db",
+        "USER": "netropolis",
+        "PASSWORD": "netropolis",
+        "HOST": "localhost",
         "PORT": "5432",
     }
 }
@@ -103,7 +104,7 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
-# AUTH_USER_MODEL = 'core.User'
+# AUTH_USER_MODEL = 'User'
 
 
 AUTH_PASSWORD_VALIDATORS = [
