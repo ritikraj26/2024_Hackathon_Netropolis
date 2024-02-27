@@ -5,19 +5,38 @@ import Divider from "./Divider";
 import Testimonials from "./Testimonials";
 import { FaArrowCircleDown } from "react-icons/fa";
 import HeroImage from "./HeroImage";
+import { useState } from "react";
 
 const HomePage = () => {
+  const [scrolling, setScrolling] = useState(true);
+
+  const handleScroll = (e) => {
+    if (e.target.scrollTop > 100) {
+      setScrolling(false);
+    } else {
+      setScrolling(true);
+    }
+  };
+
   return (
     <div className="HomePage w-screen">
       <div className="flex lg:flex-row h-screen flex-col">
-        <div className="hero-scrollable flex flex-col basis-1/2 overflow-y-scroll overflow-x-auto max-lg:basis-[100%]">
+        <div
+          className="hero-scrollable flex flex-col basis-1/2 overflow-y-scroll overflow-x-auto max-lg:basis-[100%]"
+          onScroll={handleScroll}
+        >
           <HeroSection />
           <Divider />
           <Feature />
           <Divider />
           <Testimonials />
-          <div className="fixed hero-arrow w-screen bottom-2 left-1/4 -translate-x-1/2 max-lg:left-1/2">
-            <FaArrowCircleDown className="w-full h-[30px] animate-bounce text-primary-900" />
+          <div
+            className={
+              (scrolling ? " " : "hidden ") +
+              "fixed hero-arrow w-screen bottom-2 left-1/4 -translate-x-1/2 max-lg:left-1/2"
+            }
+          >
+            <FaArrowCircleDown className="animate-bounce w-full h-[30px] text-primary-900" />
           </div>
         </div>
         <div className=" border-2 00 hero-map w-full basis-1/2 max-lg:hidden m-3 rounded-lg overflow-hidden">
