@@ -1,6 +1,12 @@
 import uuid
 from django.db import models
-from django.contrib.auth.models import User, AbstractUser, AbstractBaseUser, Group, Permission
+from django.contrib.auth.models import (
+    User,
+    AbstractUser,
+    AbstractBaseUser,
+    Group,
+    Permission,
+)
 
 
 class Location(models.Model):
@@ -67,6 +73,7 @@ class Task(models.Model):
     uuid = models.UUIDField(primary_key=True, editable=False)
     name = models.CharField(max_length=150)
     description = models.TextField()
+    created_by = models.TextField(default="none")
     points = models.PositiveIntegerField()
     duration = models.PositiveIntegerField()
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
@@ -135,6 +142,3 @@ class User_Quest(models.Model):
     class Meta:
         verbose_name = "User Quest"
         verbose_name_plural = "User Quests"
-
-
-
