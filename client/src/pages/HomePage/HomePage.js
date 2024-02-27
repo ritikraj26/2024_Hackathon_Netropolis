@@ -43,7 +43,7 @@ const HomePage = () => {
           <iframe
             width="100%"
             height="100%"
-            src="https://api.mapbox.com/styles/v1/sheharyaar/clt2p0jsj007p01p84m74dxox.html?title=false&access_token=pk.eyJ1Ijoic2hlaGFyeWFhciIsImEiOiJjbG9weTEzNmgwZTZvMmpwZWQzNm1wa2tvIn0.dVcL2IDNZ5C3z00n8uJwmA&zoomwheel=false#15/35.38013/139.26861/224.9/72"
+            src="https://api.mapbox.com/styles/v1/sheharyaar/clt2p0jsj007p01p84m74dxox.html?title=false&access_token=pk.eyJ1Ijoic2hlaGFyeWFhciIsImEiOiJjbG9weTEzNmgwZTZvMmpwZWQzNm1wa2tvIn0.dVcL2IDNZ5C3z00n8uJwmA#15/35.38013/139.26861/224.9/72"
             title="Japan"
           ></iframe>
         </div>
