@@ -26,23 +26,40 @@ const SignupDetailsForm = (props) => {
       location_name: e.target[4].value,
       hobby: e.target[5].value,
       job: e.target[6].value,
+      organization: e.target[7]?.value || "",
     };
 
     props.setDetails(details);
 
-    UserSignup(details)
-      .then((data) => {
-        console.log("Sgnup data: ", data);
-        sessionStorage.setItem("auth", JSON.stringify(data));
-        setAuthSession({ ...data });
-        toast.info("Signup Successful");
-        navigate("/dashboard");
-      })
-      .catch((err) => {
-        console.error("Signup error : ", err);
-        toast.error("Signup failed");
-        setSubmitting(false);
-      });
+    if(props.role === "user") {
+      UserSignup(details)
+        .then((data) => {
+          console.log("Sgnup data: ", data);
+          sessionStorage.setItem("auth", JSON.stringify(data));
+          setAuthSession({ ...data });
+          toast.info("Signup Successful");
+          navigate("/dashboard");
+        })
+        .catch((err) => {
+          console.error("Signup error : ", err);
+          toast.error("Signup failed");
+          setSubmitting(false);
+        });
+    } else {
+      ManagerSignup(details)
+        .then((data) => {
+          console.log("Sgnup data: ", data);
+          sessionStorage.setItem("auth", JSON.stringify(data));
+          setAuthSession({ ...data });
+          toast.info("Signup Successful");
+          navigate("/dashboard");
+        })
+        .catch((err) => {
+          console.error("Signup error : ", err);
+          toast.error("Signup failed");
+          setSubmitting(false);
+        });
+    }
   };
 
   useEffect(() => {
@@ -182,6 +199,23 @@ const SignupDetailsForm = (props) => {
             required
           />
         </div>
+        {props.role === "manager" && (
+          <div className="mb-5">
+            <label
+              htmlFor="base-input"
+              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+            >
+              Organization
+            </label>
+            <input
+              type="text"
+              id="base-input"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+              defaultValue={props?.details?.organization}
+              required
+            />
+          </div>
+        )}
         <button
           type="submit"
           className=" text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"

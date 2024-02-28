@@ -1,11 +1,12 @@
 import { useContext, useState } from "react";
 import { Spinner } from "flowbite-react";
 import { UserLogin } from "../LoginSignup/UserQueries";
+import { ManagerLogin } from "../LoginSignup/ManagerQueries";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { AuthContext } from "../../App";
 
-const SigninForm = () => {
+const SigninForm = (props) => {
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -19,20 +20,38 @@ const SigninForm = () => {
     setSubmitting(true);
 
     // check auth
-    UserLogin({ email: e.target[0].value, password: e.target[1].value })
-      .then((data) => {
-        console.log("login data : ", data);
-        sessionStorage.setItem("auth", JSON.stringify(data));
-        setAuthSession({ ...data });
-        setSubmitting(false);
-        toast.info("Login successful");
-        navigate("/dashboard");
-      })
-      .catch((err) => {
-        toast.error("Login failed");
-        console.error("Login error : ", err);
-        setSubmitting(false);
-      });
+    if(props.role === "user") {
+      UserLogin({ email: e.target[0].value, password: e.target[1].value })
+        .then((data) => {
+          console.log("login data : ", data);
+          sessionStorage.setItem("auth", JSON.stringify(data));
+          setAuthSession({ ...data });
+          setSubmitting(false);
+          toast.info("Login successful");
+          navigate("/dashboard");
+        })
+        .catch((err) => {
+          toast.error("Login failed");
+          console.error("Login error : ", err);
+          setSubmitting(false);
+        });
+    }
+    else {
+      ManagerLogin({ email: e.target[0].value, password: e.target[1].value })
+        .then((data) => {
+          console.log("login data : ", data);
+          sessionStorage.setItem("auth", JSON.stringify(data));
+          setAuthSession({ ...data });
+          setSubmitting(false);
+          toast.info("Login successful");
+          navigate("/dashboard");
+        })
+        .catch((err) => {
+          toast.error("Login failed");
+          console.error("Login error : ", err);
+          setSubmitting(false);
+        });
+    }
   };
 
   return (

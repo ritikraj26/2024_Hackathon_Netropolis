@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import SignupCredsForm from "../../components/Forms/SignupCreds";
 import SignupDetailsForm from "../../components/Forms/SignupDetails";
 import { useState } from "react";
+import { AuthContext } from "../../App";
+
 
 const commonStyle =
   "flex-row content-start relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 block max-w-xl p-6 bg-white border border-gray-200 rounded-lg shadow m-0 px-5 py-8";
@@ -14,6 +16,7 @@ const SignupPage = () => {
   const [currPage, setCurrPage] = useState(0);
   const [creds, setCreds] = useState(null);
   const [details, setDetails] = useState(null);
+  const { authSession } = useContext(AuthContext);
 
   const forms = [
     <SignupCredsForm
@@ -25,6 +28,7 @@ const SignupPage = () => {
       details={details}
       setDetails={setDetails}
       creds={creds}
+      role={authSession.role}
     />,
   ];
 

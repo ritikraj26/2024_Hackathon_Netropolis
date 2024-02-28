@@ -25,7 +25,7 @@ const LoginPage = () => {
     }
   }, [authSession, navigate]);
 
-  const forms = [<SigninForm />];
+  const forms = [<SigninForm role={authSession.role}/>];
 
   const handleBackClick = (e) => {
     e.preventDefault();
