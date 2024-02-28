@@ -1,10 +1,15 @@
-import { useRef, useState } from "react";
+import { useContext, useState } from "react";
 import { Spinner } from "flowbite-react";
+import { UserLogin } from "../LoginSignup/UserQueries";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { AuthContext } from "../../App";
 
 const SigninForm = () => {
-  const pwdRef = useRef(null);
+  const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const { authSession, setAuthSession } = useContext(AuthContext);
 
   const errStyle =
     "bg-red-50 border border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:text-red-500 dark:placeholder-red-500 dark:border-red-500";
@@ -14,6 +19,20 @@ const SigninForm = () => {
     setSubmitting(true);
 
     // check auth
+    UserLogin({ email: e.target[0].value, password: e.target[1].value })
+      .then((data) => {
+        console.log("login data : ", data);
+        sessionStorage.setItem("auth", JSON.stringify(data));
+        setAuthSession({ ...data });
+        setSubmitting(false);
+        toast.info("Login successful");
+        navigate("/dashboard");
+      })
+      .catch((err) => {
+        toast.error("Login failed");
+        console.error("Login error : ", err);
+        setSubmitting(false);
+      });
   };
 
   return (

@@ -26,8 +26,8 @@ code {
 
 /* Scroll bar stylings */
 ::-webkit-scrollbar {
-  width: 0px;
-  height: 10px;
+  width: 2px;
+  height: 2px;
 }
 
 /* Track */
@@ -38,10 +38,10 @@ code {
 /* Handle */
 ::-webkit-scrollbar-thumb {
   border-radius: 3px;
-  background: #2563eb;
+  background: #729140;
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: #2563eb;
+  background: #729140;
 }

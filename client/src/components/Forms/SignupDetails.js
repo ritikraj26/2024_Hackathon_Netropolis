@@ -1,41 +1,64 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Spinner } from "flowbite-react";
+import { UserSignup } from "../LoginSignup/UserQueries";
+import { FetchLocations } from "../Quests/QuestQueries";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { AuthContext } from "../../App";
 
 const SignupDetailsForm = (props) => {
+  const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [locations, setLocations] = useState([]);
+  const { authSession, setAuthSession } = useContext(AuthContext);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setSubmitting(true);
 
-    console.log(
-      "Details: ",
-      props?.creds?.email,
-      props?.creds?.password,
-      e.target[0].value,
-      e.target[1].value,
-      e.target[2].value,
-      e.target[3].value,
-      e.target[4].value,
-      e.target[5].value,
-      e.target[6].value
-    );
-
-    props.setDetails({
-      firstName: e.target[0].value,
-      lastName: e.target[1].value,
-      age: e.target[2].value,
+    const details = {
+      email: props?.creds?.email,
+      password: props?.creds?.password,
+      first_name: e.target[0].value,
+      last_name: e.target[1].value,
+      age: parseInt(e.target[2].value),
       gender: e.target[3].value,
-      location: e.target[4].value,
-      hobbies: e.target[5].value,
+      location_name: e.target[4].value,
+      hobby: e.target[5].value,
       job: e.target[6].value,
-    });
-    // send to backend
+    };
+
+    props.setDetails(details);
+
+    UserSignup(details)
+      .then((data) => {
+        console.log("Sgnup data: ", data);
+        sessionStorage.setItem("auth", JSON.stringify(data));
+        setAuthSession({ ...data });
+        toast.info("Signup Successful");
+        navigate("/dashboard");
+      })
+      .catch((err) => {
+        console.error("Signup error : ", err);
+        toast.error("Signup failed");
+        setSubmitting(false);
+      });
   };
 
   useEffect(() => {
-    setLocations(["Mumbai", "Delhi", "Bangalore", "Chennai", "Kolkata"]);
+    FetchLocations()
+      .then((data) => {
+        let locs = [];
+        data.forEach((d) => {
+          locs = [...locs, { uuid: d.uuid, name: d.name }];
+        });
+
+        console.log("locs ", locs);
+        setLocations(locs);
+      })
+      .catch((error) => {
+        console.error("Dashboard :", error);
+      });
   }, []);
 
   return (
@@ -121,8 +144,8 @@ const SignupDetailsForm = (props) => {
               required
             >
               {locations.map((location, index) => (
-                <option key={index} value={location}>
-                  {location}
+                <option key={index} value={location.name}>
+                  {location.name}
                 </option>
               ))}
             </select>

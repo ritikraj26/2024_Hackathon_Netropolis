@@ -1,5 +1,5 @@
 const CMDashboard = () => {
-  return <div>community manager</div>;
+  return <div className="grid-rows-3 w-screen h-screen"></div>;
 };
 
 export default CMDashboard;

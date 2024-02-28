@@ -1,4 +1,4 @@
-import Avatar from "../../components/Profile/Avatar";
+import Avatar from "../../components/Profile/UserAvatar";
 
 const UserProfile = () => {
   return (

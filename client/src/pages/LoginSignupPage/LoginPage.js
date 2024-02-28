@@ -1,7 +1,8 @@
 import { FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import SigninForm from "../../components/Forms/Signin";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../../App";
 
 const commonStyle =
   "flex-row content-start relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 block max-w-xl p-6 bg-white border border-gray-200 rounded-lg shadow m-0 px-5 py-8";
@@ -11,15 +12,23 @@ const mobileStyle = "max-sm:max-w-sm";
 const LoginPage = () => {
   const navigate = useNavigate();
   const [currPage, setCurrPage] = useState(0);
+  const { authSession } = useContext(AuthContext);
+
+  useEffect(() => {
+    console.log("authSession", authSession);
+    if (authSession !== null && authSession !== undefined) {
+      if (authSession.role === "manager") {
+        navigate("/manager-dashboard");
+      } else {
+        navigate("/dashboard");
+      }
+    }
+  }, [authSession, navigate]);
 
   const forms = [<SigninForm />];
 
   const handleBackClick = (e) => {
     e.preventDefault();
-
-    if (currPage <= 0) {
-      navigate(-1);
-    }
 
     setCurrPage((prev) => prev - 1);
   };
@@ -54,7 +63,7 @@ const LoginPage = () => {
         </div>
         {currPage >= 0 && currPage < forms.length
           ? forms[currPage]
-          : navigate(-1)}
+          : navigate("/")}
       </div>
     </div>
   );

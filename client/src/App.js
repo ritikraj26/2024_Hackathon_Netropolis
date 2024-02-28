@@ -1,26 +1,57 @@
-import React from "react";
+import React, { useContext, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import HomePage from "./pages/HomePage/HomePage";
 import Dashboard from "./pages/Dashboard/DashboardPage";
 import Profile from "./pages/Profile/ProfilePage";
 import { ErrorPage } from "./pages/ErrorPage/ErrorPage";
-import Dock from "./components/Dock/Dock";
 import { createContext, useState } from "react";
 import { Spinner } from "flowbite-react";
 import LoginPage from "./pages/LoginSignupPage/LoginPage";
 import SignupPage from "./pages/LoginSignupPage/SignupPage";
+import TopNavbar from "./components/Navbar/Navbar";
+import QuestPage from "./pages/QuestPage/QuestPage";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const AuthContext = createContext({
-  supabase: null,
+  authSession: null,
+  setAuthSession: () => {},
 });
 
 const ProtectedRoute = (props) => {
+  const { authSession, setAuthSession } = useContext(AuthContext);
+
   const [auth, setAuth] = useState({
-    isAuthed: true,
+    isAuthed: false,
     checkingAuth: true,
   });
 
   // check for auth in useEffect
+  useEffect(() => {
+    console.log("authsession topnav : ", authSession);
+    if (authSession !== null && authSession !== undefined) {
+      setAuth({
+        isAuthed: true,
+        checkingAuth: false,
+      });
+    } else {
+      const authCookie = sessionStorage.getItem("auth");
+      console.log("auth cookie", authCookie);
+      if (authCookie === null) {
+        setAuth({
+          isAuthed: false,
+          checkingAuth: false,
+        });
+      } else {
+        const authCookieObj = JSON.parse(authCookie);
+        setAuthSession({ ...authCookieObj });
+        setAuth({
+          isAuthed: true,
+          checkingAuth: false,
+        });
+      }
+    }
+  }, [setAuthSession, authSession]);
 
   return (
     <div>
@@ -28,7 +59,7 @@ const ProtectedRoute = (props) => {
         <div className="w-100  text-center justify-center absolute top-1/2 left-1/2">
           <Spinner
             size="xl"
-            className="fill-[#4d4dc7]"
+            className="fill-primary-600"
             aria-label="Center-aligned"
           />
         </div>
@@ -36,9 +67,8 @@ const ProtectedRoute = (props) => {
         <>
           {auth.isAuthed ? (
             <>
-              <Dock />
-              {props.children}
-              {/* {props.children} */}
+              <ToastContainer />
+              <TopNavbar children={props.children} />
             </>
           ) : (
             <Navigate to="/login" replace />
@@ -50,20 +80,35 @@ const ProtectedRoute = (props) => {
 };
 
 function App() {
+  const [authSession, setAuthSession] = useState(null);
+
   return (
     <>
       <BrowserRouter>
         {/* TODO: Add AuthContext.Provider value */}
-        <AuthContext.Provider value={{}}>
+        <AuthContext.Provider
+          value={{
+            authSession: authSession,
+            setAuthSession: setAuthSession,
+          }}
+        >
           <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/login" element={<LoginPage login={true} />} />
+            <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route
               path="/dashboard"
               element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/quests"
+              element={
+                <ProtectedRoute>
+                  <QuestPage />
                 </ProtectedRoute>
               }
             />

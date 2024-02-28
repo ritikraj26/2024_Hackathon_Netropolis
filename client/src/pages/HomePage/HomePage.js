@@ -22,7 +22,7 @@ const HomePage = () => {
     <div className="HomePage w-screen">
       <div className="flex lg:flex-row h-screen flex-col">
         <div
-          className="hero-scrollable flex flex-col basis-1/2 overflow-y-scroll overflow-x-auto max-lg:basis-[100%]"
+          className="hero-scrollable flex flex-col basis-1/2 overflow-y-auto overflow-x-auto max-lg:basis-[100%]"
           onScroll={handleScroll}
         >
           <HeroSection />

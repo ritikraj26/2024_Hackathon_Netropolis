@@ -30,11 +30,6 @@ const SignupPage = () => {
 
   const handleBackClick = (e) => {
     e.preventDefault();
-
-    if (currPage < 0) {
-      navigate(-1);
-    }
-
     setCurrPage((prev) => prev - 1);
   };
 
@@ -68,7 +63,7 @@ const SignupPage = () => {
         </div>
         {currPage >= 0 && currPage < forms.length
           ? forms[currPage]
-          : navigate(-1)}
+          : navigate("/")}
       </div>
     </div>
   );
