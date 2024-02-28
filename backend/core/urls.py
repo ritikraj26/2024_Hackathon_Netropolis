@@ -76,4 +76,20 @@ urlpatterns = [
         core.views.get_manager_by_uuid,
         name="get_manager_by_uuid",
     ),
+    # Embeddings
+    path(
+        "create/single_quest_embeddings",
+        core.views.create_single_quest_embeddings,
+        name="create_single_quest_embeddings",
+    ),
+    path(
+        "create/all_quest_embeddings",
+        core.views.create_all_quest_embeddings,
+        name="create_all_quest_embeddings",
+    ),
+    path(
+        "get/quest/search_results",
+        core.views.quest_search_results,
+        name="quest_search_results",
+    ),
 ]

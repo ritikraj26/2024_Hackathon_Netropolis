@@ -1,5 +1,7 @@
 import json
 import uuid
+import os
+import requests
 from django.contrib.auth import login, logout, authenticate
 from django.shortcuts import render, HttpResponse
 from django.http import JsonResponse
@@ -9,6 +11,7 @@ from django.db import IntegrityError
 from django.contrib.auth.models import User
 from .models import *
 from .serializers import *
+from pgvector.django import L2Distance
 
 
 @csrf_exempt
@@ -94,11 +97,14 @@ def signup_manager(request):
 
         response_data = {
             "message": "Manager created successfully",
-            "manager_uuid": participant.uuid,
-            "manager_email": participant.email,
-            "manager_first_name": participant.first_name,
-            "manager_last_name": participant.last_name,
-            "manager_role": participant.role,
+            "uuid": participant.uuid,
+            "email": participant.email,
+            "first_name": participant.first_name,
+            "last_name": participant.last_name,
+            "role": participant.role,
+            "location": participant.location.name,
+            "points": participant.points,
+            "organization": participant.organization,
         }
 
         return JsonResponse(response_data, safe=False)
@@ -124,14 +130,14 @@ def login_manager(request):
 
             response_data = {
                 "message": "Logged in successfully",
-                "manager_uuid": participant_deatils.uuid,
-                "manager_email": participant_deatils.email,
-                "manager_first_name": participant_deatils.first_name,
-                "manager_last_name": participant_deatils.last_name,
-                "manager_role": participant_deatils.role,
-                "manager_location": participant_deatils.location.name,
-                "manager_points": participant_deatils.points,
-                "manager_organization": participant_deatils.organization,
+                "uuid": participant_deatils.uuid,
+                "email": participant_deatils.email,
+                "first_name": participant_deatils.first_name,
+                "last_name": participant_deatils.last_name,
+                "role": participant_deatils.role,
+                "location": participant_deatils.location.name,
+                "points": participant_deatils.points,
+                "organization": participant_deatils.organization,
             }
             return JsonResponse(response_data, safe=False)
         else:
@@ -198,13 +204,13 @@ def signup_user(request):
         )
         response_data = {
             "message": "User created successfully",
-            "user_uuid": participant.uuid,
-            "user_email": participant.email,
-            "user_first_name": participant.first_name,
-            "user_last_name": participant.last_name,
-            "user_role": participant.role,
-            "user_location": participant.location.name,
-            "user_points": participant.points,
+            "uuid": participant.uuid,
+            "email": participant.email,
+            "first_name": participant.first_name,
+            "last_name": participant.last_name,
+            "role": participant.role,
+            "location": participant.location.name,
+            "points": participant.points,
         }
         return JsonResponse(response_data, safe=False)
 
@@ -226,14 +232,13 @@ def login_user(request):
             participant_deatils = Participant.objects.get(user=user)
             response_data = {
                 "message": "Logged in successfully",
-                "user_uuid": participant_deatils.uuid,
-                "user_email": participant_deatils.email,
-                "user_first_name": participant_deatils.first_name,
-                "user_last_name": participant_deatils.last_name,
-                "user_role": participant_deatils.role,
-                "user_location": participant_deatils.location.name,
-                "user_points": participant_deatils.points,
-                "user_organization": participant_deatils.organization,
+                "uuid": participant_deatils.uuid,
+                "email": participant_deatils.email,
+                "first_name": participant_deatils.first_name,
+                "last_name": participant_deatils.last_name,
+                "role": participant_deatils.role,
+                "location": participant_deatils.location.name,
+                "points": participant_deatils.points,
             }
             return JsonResponse(response_data, safe=False)
         else:
@@ -789,3 +794,155 @@ def get_manager_by_uuid(request, pk):
         return JsonResponse(serialized_manager.data, safe=False)
     else:
         return HttpResponse("Get Manager Page")
+
+
+def query(payload):
+    API_URL = os.getenv("API_URL")
+    headers_str = os.getenv("headers")
+
+    headers = json.loads(headers_str) if headers_str else {}
+
+    print(API_URL, "API_URL")
+    print(headers, "headers")
+
+    response = requests.post(API_URL, headers=headers, json={"inputs": payload})
+    return response.json()
+
+
+@csrf_exempt
+def create_single_quest_embeddings(request):
+    if request.method == "POST":
+        try:
+            quest_data = create_quest(request)
+        except:
+            return JsonResponse("Failed to create quest", status=400, safe=False)
+
+        json_data = json.loads(quest_data.content)
+
+        quest_uuid = json_data.get("quest_uuid")
+        quest_name = json_data.get("quest_name")
+        quest_location = json_data.get("location")
+        quest_tasks = json_data.get("tasks")
+
+        task_string = ""
+
+        for task in quest_tasks:
+            task = Task.objects.get(uuid=task.get("uuid"))
+            task_string = task_string + " " + task.name
+
+        combinedString = (
+            quest_name
+            + " in "
+            + quest_location
+            + " "
+            + "having the following tasks:"
+            + task_string
+        )
+
+        finalString = str(combinedString)
+
+        query_response = query(finalString)
+
+        # store the response inside quest_embeeding
+        QuestEmbeddings.objects.create(
+            quest_uuid=quest_uuid, quest_vector=query_response
+        )
+
+        return JsonResponse(
+            "created single quest and inserted in vector", status=200, safe=False
+        )
+    else:
+        return HttpResponse("Create Single Quest Embeddings Page")
+
+
+@csrf_exempt
+def create_all_quest_embeddings(request):
+    if request.method == "POST":
+        quests = Quest.objects.all()
+
+        for quest in quests:
+            quest_uuid = quest.uuid
+            quest_name = quest.name
+            quest_location = quest.location.name
+
+            quest_tasks = Quest_Task.objects.filter(quest=quest)
+
+            task_string = ""
+
+            for quest_task in quest_tasks:
+                task = quest_task.task
+                task_string = task_string + " " + task.name
+
+            combinedString = (
+                quest_name
+                + " in "
+                + quest_location
+                + " "
+                + "having the following tasks:"
+                + task_string
+            )
+
+            finalString = str(combinedString)
+
+            query_response = query(finalString)
+
+            # store the response inside quest_embeeding
+            QuestEmbeddings.objects.create(
+                quest_uuid=quest_uuid, quest_vector=query_response
+            )
+
+        return JsonResponse(
+            "created all quest and inserted in vector", status=200, safe=False
+        )
+    else:
+        return HttpResponse("Create All Quest Embeddings Page")
+
+
+@csrf_exempt
+def quest_search_results(request):
+    if request.method == "POST":
+        request_data_str = request.body.decode("utf-8")
+        request_data = json.loads(request_data_str)
+
+        search_query = str(request_data.get("search_query"))
+
+        # get the vector of the search query
+        query_embeedings = query(search_query)
+
+        # get all the quest embeedings
+        quest_embeedings = QuestEmbeddings.objects.order_by(
+            L2Distance("quest_vector", query_embeedings)
+        )
+
+        serialized_data = []
+        serialized_task = []
+
+        for quest in quest_embeedings:
+            quest_tasks = Quest_Task.objects.filter(quest=quest)
+            for quest_task in quest_tasks:
+                serialized_task.append(
+                    {
+                        "task_uuid": quest_task.task.uuid,
+                        "task_name": quest_task.task.name,
+                        "task_description": quest_task.task.description,
+                        "task_points": quest_task.task.points,
+                        "task_duration": quest_task.task.duration,
+                        "day_number": quest_task.day_number,
+                    }
+                )
+        serialized_data.append(
+            {
+                "quest_uuid": quest.uuid,
+                "quest_name": quest.name,
+                "quest_description": quest.description,
+                "quest_total_points": quest.total_points,
+                "quest_total_duration": quest.total_duration,
+                "quest_max_people": quest.max_people,
+                "location": quest.location.name,
+                "tasks": serialized_task,
+            }
+        )
+
+        return JsonResponse(serialized_data, safe=False)
+    else:
+        return HttpResponse("Quest Search Results Page")

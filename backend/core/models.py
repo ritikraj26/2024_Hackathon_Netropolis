@@ -1,5 +1,6 @@
 import uuid
 from django.db import models
+from pgvector.django import VectorField
 from django.contrib.auth.models import (
     User,
     AbstractUser,
@@ -142,3 +143,12 @@ class User_Quest(models.Model):
     class Meta:
         verbose_name = "User Quest"
         verbose_name_plural = "User Quests"
+
+
+class QuestEmbeddings(models.Model):
+    quest_uuid = models.UUIDField()
+    quest_vector = VectorField(dimensions=384)  # This field type is a guess.
+
+    class Meta:
+        managed = False
+        db_table = "quest_embeddings"
