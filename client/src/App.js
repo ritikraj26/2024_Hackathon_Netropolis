@@ -2,7 +2,7 @@ import React, { useContext, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import HomePage from "./pages/HomePage/HomePage";
 import Dashboard from "./pages/Dashboard/DashboardPage";
-import Profile from "./pages/Profile/ProfilePage";
+import ProfilePage from "./pages/Profile/ProfilePage";
 import { ErrorPage } from "./pages/ErrorPage/ErrorPage";
 import { createContext, useState } from "react";
 import { Spinner } from "flowbite-react";
@@ -12,6 +12,7 @@ import TopNavbar from "./components/Navbar/Navbar";
 import QuestPage from "./pages/QuestPage/QuestPage";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { EditorPage } from "./pages/EditorPage/EditorPage";
 
 const AuthContext = createContext({
   authSession: null,
@@ -44,7 +45,7 @@ const ProtectedRoute = (props) => {
         });
       } else {
         const authCookieObj = JSON.parse(authCookie);
-        setAuthSession({ ...authCookieObj });
+        setAuthSession(authCookieObj);
         setAuth({
           isAuthed: true,
           checkingAuth: false,
@@ -67,7 +68,6 @@ const ProtectedRoute = (props) => {
         <>
           {auth.isAuthed ? (
             <>
-              <ToastContainer />
               <TopNavbar children={props.children} />
             </>
           ) : (
@@ -80,18 +80,19 @@ const ProtectedRoute = (props) => {
 };
 
 function App() {
-  const [authSession, setAuthSession] = useState(null);
+  const [authObj, setAuthObj] = useState(null);
 
   return (
     <>
-      <BrowserRouter>
-        {/* TODO: Add AuthContext.Provider value */}
-        <AuthContext.Provider
-          value={{
-            authSession: authSession,
-            setAuthSession: setAuthSession,
-          }}
-        >
+      <ToastContainer />
+      {/* TODO: Add AuthContext.Provider value */}
+      <AuthContext.Provider
+        value={{
+          authSession: authObj,
+          setAuthSession: setAuthObj,
+        }}
+      >
+        <BrowserRouter>
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage role={"user"} />} />
@@ -124,15 +125,23 @@ function App() {
               path="/profile"
               element={
                 <ProtectedRoute>
-                  <Profile />
+                  <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/editor"
+              element={
+                <ProtectedRoute>
+                  <EditorPage />
                 </ProtectedRoute>
               }
             />
             <Route path="/error" element={<ErrorPage />} />
             <Route path="*" element={<ErrorPage />} />
           </Routes>
-        </AuthContext.Provider>
-      </BrowserRouter>
+        </BrowserRouter>
+      </AuthContext.Provider>
     </>
   );
 }

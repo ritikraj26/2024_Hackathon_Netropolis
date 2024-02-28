@@ -21,7 +21,7 @@ const navbarTheme = {
       off: "",
     },
     inner: {
-      base: "mx-auto flex flex-wrap items-center place-content-between",
+      base: "mx-auto flex flex-wrap items-center justify-around",
       fluid: {
         on: "",
         off: "container",
@@ -83,8 +83,8 @@ const TopNavbar = (props) => {
 
   return (
     <AuthNavContext.Provider value={{}}>
-      <div className="box-border m-0 relative sticky z-50 w-full h-16 bg-white border-x-0 border-gray-200 left-0 top-0 dark:bg-gray-700 dark:border-gray-600 ">
-        <Navbar fluid rounded theme={navbarTheme}>
+      <div className="box-border m-0 relative sticky z-50 w-full h-16 bg-white border-b-2 border-primary-200 left-0 top-0 dark:bg-gray-700 dark:border-gray-600 ">
+        <Navbar fluid theme={navbarTheme}>
           <Navbar.Brand href="https://flowbite-react.com">
             <img
               src="https://flowbite.com/docs/images/logo.svg"
@@ -124,18 +124,21 @@ const TopNavbar = (props) => {
             <Navbar.Link
               href="/dashboard"
               active={window.location.pathname === "/dashboard"}
+              className="text-xl"
             >
               Dashboard
             </Navbar.Link>
             <Navbar.Link
               href="/quests"
               active={window.location.pathname === "/quests"}
+              className="text-xl"
             >
               Quests
             </Navbar.Link>
             <Navbar.Link
               href="#"
               active={window.location.pathname === "/leaderboard"}
+              className="text-xl"
             >
               Leaderboard
             </Navbar.Link>

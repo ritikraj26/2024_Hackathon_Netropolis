@@ -1,4 +1,4 @@
-const FetchLocations = (props) => {
+const FetchLocations = () => {
   return new Promise(async (resolve, reject) => {
     const queryOptions = {
       method: "GET",
@@ -104,9 +104,65 @@ const FindQuestsByText = ({ search_query }) => {
   });
 };
 
+const FetchQuestsByCreatorId = ({ creator_id }) => {
+  return new Promise(async (resolve, reject) => {
+    const queryOptions = {
+      method: "GET",
+    };
+
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND_URL}/api/get/quest/createdBy/${creator_id}`,
+        queryOptions
+      );
+
+      if (response.status >= 200 && response.status < 300) {
+        const data = await response.json();
+        resolve(data);
+      } else {
+        throw new Error(`HTTP Error ${response.status}`);
+      }
+    } catch (error) {
+      console.error("FetchQuestsByCreatorId : ", error);
+      reject(error);
+    }
+  });
+};
+
+const PublishQuest = ({ questData }) => {
+  return new Promise(async (resolve, reject) => {
+    const queryOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(questData),
+    };
+
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND_URL}/api/create/quest`,
+        queryOptions
+      );
+
+      if (response.status >= 200 && response.status < 300) {
+        const data = await response.json();
+        resolve(data);
+      } else {
+        throw new Error(`HTTP Error ${response.status}`);
+      }
+    } catch (error) {
+      console.error("PublishQuest : ", error);
+      reject(error);
+    }
+  });
+};
+
 export {
   FetchLocations,
   FetchQuestsByLocation,
   FetchQuestsByUserId,
   FindQuestsByText,
+  FetchQuestsByCreatorId,
+  PublishQuest,
 };

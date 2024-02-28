@@ -17,7 +17,7 @@ const LoginPage = ({ role }) => {
   const loginRole = role || "user";
 
   useEffect(() => {
-    console.log("authSession", authSession);
+    console.log("authSession login: ", authSession);
     if (authSession !== null && authSession !== undefined) {
       navigate("/dashboard");
     }
