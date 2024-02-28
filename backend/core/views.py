@@ -102,7 +102,7 @@ def signup_manager(request):
             "first_name": participant.first_name,
             "last_name": participant.last_name,
             "role": participant.role,
-            "location": participant.location.name,
+            "location": participant.location.uuid,
             "points": participant.points,
             "organization": participant.organization,
         }
@@ -135,7 +135,7 @@ def login_manager(request):
                 "first_name": participant_deatils.first_name,
                 "last_name": participant_deatils.last_name,
                 "role": participant_deatils.role,
-                "location": participant_deatils.location.name,
+                "location": participant_deatils.location.uuid,
                 "points": participant_deatils.points,
                 "organization": participant_deatils.organization,
             }
@@ -209,7 +209,7 @@ def signup_user(request):
             "first_name": participant.first_name,
             "last_name": participant.last_name,
             "role": participant.role,
-            "location": participant.location.name,
+            "location": participant.location.uuid,
             "points": participant.points,
         }
         return JsonResponse(response_data, safe=False)
@@ -224,7 +224,7 @@ def login_user(request):
         request_data_str = request.body.decode("utf-8")
         request_data = json.loads(request_data_str)
 
-        email = request_data.get("username")
+        email = request_data.get("email")
         password = request_data.get("password")
         user = authenticate(username=email, password=password)
         if user is not None:
@@ -237,7 +237,7 @@ def login_user(request):
                 "first_name": participant_deatils.first_name,
                 "last_name": participant_deatils.last_name,
                 "role": participant_deatils.role,
-                "location": participant_deatils.location.name,
+                "location": participant_deatils.location.uuid,
                 "points": participant_deatils.points,
             }
             return JsonResponse(response_data, safe=False)
@@ -393,6 +393,34 @@ def get_task_by_location(request, pk):
 
 
 @csrf_exempt
+def get_task_by_quest(request, pk):
+    if request.method == "GET":
+        quest = Quest.objects.get(uuid=pk)
+
+        quest_tasks = Quest_Task.objects.filter(quest=quest)
+
+        for quest_task in quest_tasks:
+            print(quest_task.task, "Quest Task")
+
+        serialized_tasks = []
+        for quest_task in quest_tasks:
+            task = quest_task.task
+            serialized_tasks.append(
+                {
+                    "task_uuid": task.uuid,
+                    "task_name": task.name,
+                    "task_description": task.description,
+                    "task_points": task.points,
+                    "task_duration": task.duration,
+                }
+            )
+
+        return JsonResponse(serialized_tasks, safe=False)
+    else:
+        return HttpResponse("Get Task by Quest Page")
+
+
+@csrf_exempt
 def get_task_by_category(request, pk):
     if request.method == "GET":
         category = Category.objects.get(uuid=pk)
@@ -504,32 +532,21 @@ def get_quest_by_location(request, pk):
         quests = Quest.objects.filter(location=location.uuid)
 
         serialized_data = []
-        serialized_task = []
+
         for quest in quests:
-            quest_tasks = Quest_Task.objects.filter(quest=quest)
-            for quest_task in quest_tasks:
-                serialized_task.append(
-                    {
-                        "task_uuid": quest_task.task.uuid,
-                        "task_name": quest_task.task.name,
-                        "task_description": quest_task.task.description,
-                        "task_points": quest_task.task.points,
-                        "task_duration": quest_task.task.duration,
-                        "day_number": quest_task.day_number,
-                    }
-                )
-        serialized_data.append(
-            {
-                "quest_uuid": quest.uuid,
-                "quest_name": quest.name,
-                "quest_description": quest.description,
-                "quest_total_points": quest.total_points,
-                "quest_total_duration": quest.total_duration,
-                "quest_max_people": quest.max_people,
-                "location": quest.location.name,
-                "tasks": serialized_task,
-            }
-        )
+            total_tasks = Quest_Task.objects.filter(quest=quest).count()
+            serialized_data.append(
+                {
+                    "quest_uuid": quest.uuid,
+                    "quest_name": quest.name,
+                    "quest_description": quest.description,
+                    "quest_total_points": quest.total_points,
+                    "quest_total_duration": quest.total_duration,
+                    "quest_max_people": quest.max_people,
+                    "location": quest.location.name,
+                    "total_tasks": total_tasks,
+                }
+            )
 
         return JsonResponse(serialized_data, safe=False)
 
@@ -546,38 +563,29 @@ def get_quest_by_category(request, pk):
         tasks = Task.objects.filter(category=category.uuid)
 
         quests = []
+
         for task in tasks:
             quest_tasks = Quest_Task.objects.filter(task=task)
+
             for quest_task in quest_tasks:
                 quests.append(quest_task.quest)
 
         serialized_data = []
-        serialized_task = []
+
         for quest in quests:
-            quest_tasks = Quest_Task.objects.filter(quest=quest)
-            for quest_task in quest_tasks:
-                serialized_task.append(
-                    {
-                        "task_uuid": quest_task.task.uuid,
-                        "task_name": quest_task.task.name,
-                        "task_description": quest_task.task.description,
-                        "task_points": quest_task.task.points,
-                        "task_duration": quest_task.task.duration,
-                        "day_number": quest_task.day_number,
-                    }
-                )
-        serialized_data.append(
-            {
-                "quest_uuid": quest.uuid,
-                "quest_name": quest.name,
-                "quest_description": quest.description,
-                "quest_total_points": quest.total_points,
-                "quest_total_duration": quest.total_duration,
-                "quest_max_people": quest.max_people,
-                "location": quest.location.name,
-                "tasks": serialized_task,
-            }
-        )
+            total_tasks = Quest_Task.objects.filter(quest=quest).count()
+            serialized_data.append(
+                {
+                    "quest_uuid": quest.uuid,
+                    "quest_name": quest.name,
+                    "quest_description": quest.description,
+                    "quest_total_points": quest.total_points,
+                    "quest_total_duration": quest.total_duration,
+                    "quest_max_people": quest.max_people,
+                    "location": quest.location.name,
+                    "total_tasks": total_tasks,
+                }
+            )
 
         return JsonResponse(serialized_data, safe=False)
 
@@ -594,44 +602,35 @@ def get_quest_by_location_type(request, pk):
         tasks = Task.objects.filter(location_type=location_type.uuid)
 
         quests = []
+
         for task in tasks:
             quest_tasks = Quest_Task.objects.filter(task=task)
+
             for quest_task in quest_tasks:
                 quests.append(quest_task.quest)
 
         serialized_data = []
-        serialized_task = []
+
         for quest in quests:
-            quest_tasks = Quest_Task.objects.filter(quest=quest)
-            for quest_task in quest_tasks:
-                serialized_task.append(
-                    {
-                        "task_uuid": quest_task.task.uuid,
-                        "task_name": quest_task.task.name,
-                        "task_description": quest_task.task.description,
-                        "task_points": quest_task.task.points,
-                        "task_duration": quest_task.task.duration,
-                        "day_number": quest_task.day_number,
-                    }
-                )
-        serialized_data.append(
-            {
-                "quest_uuid": quest.uuid,
-                "quest_name": quest.name,
-                "quest_description": quest.description,
-                "quest_total_points": quest.total_points,
-                "quest_total_duration": quest.total_duration,
-                "quest_max_people": quest.max_people,
-                "location": quest.location.name,
-                "tasks": serialized_task,
-            }
-        )
+            total_tasks = Quest_Task.objects.filter(quest=quest).count()
+            serialized_data.append(
+                {
+                    "quest_uuid": quest.uuid,
+                    "quest_name": quest.name,
+                    "quest_description": quest.description,
+                    "quest_total_points": quest.total_points,
+                    "quest_total_duration": quest.total_duration,
+                    "quest_max_people": quest.max_people,
+                    "location": quest.location.name,
+                    "total_tasks": total_tasks,
+                }
+            )
 
         return JsonResponse(serialized_data, safe=False)
 
 
 @csrf_exempt
-def get_quest_by_user(request, pk):
+def get_quest_by_createdBy(request, pk):
     if request.method == "GET":
 
         try:
@@ -642,38 +641,27 @@ def get_quest_by_user(request, pk):
         quests = Quest.objects.filter(created_by=user)
 
         serialized_data = []
-        serialized_task = []
+
         for quest in quests:
-            quest_tasks = Quest_Task.objects.filter(quest=quest)
-            for quest_task in quest_tasks:
-                serialized_task.append(
-                    {
-                        "task_uuid": quest_task.task.uuid,
-                        "task_name": quest_task.task.name,
-                        "task_description": quest_task.task.description,
-                        "task_points": quest_task.task.points,
-                        "task_duration": quest_task.task.duration,
-                        "day_number": quest_task.day_number,
-                    }
-                )
-        serialized_data.append(
-            {
-                "quest_uuid": quest.uuid,
-                "quest_name": quest.name,
-                "quest_description": quest.description,
-                "quest_total_points": quest.total_points,
-                "quest_total_duration": quest.total_duration,
-                "quest_max_people": quest.max_people,
-                "location": quest.location.name,
-                "tasks": serialized_task,
-            }
-        )
+            total_tasks = Quest_Task.objects.filter(quest=quest).count()
+            serialized_data.append(
+                {
+                    "quest_uuid": quest.uuid,
+                    "quest_name": quest.name,
+                    "quest_description": quest.description,
+                    "quest_total_points": quest.total_points,
+                    "quest_total_duration": quest.total_duration,
+                    "quest_max_people": quest.max_people,
+                    "location": quest.location.name,
+                    "total_tasks": total_tasks,
+                }
+            )
 
         return JsonResponse(serialized_data, safe=False)
 
 
 @csrf_exempt
-def create_user_quest(request):
+def purchased_user_quest(request):
     if request.method == "POST":
         request_data_str = request.body.decode("utf-8")
         request_data = json.loads(request_data_str)
@@ -711,7 +699,7 @@ def create_user_quest(request):
         )
 
         response_data = {
-            "message": "User Quest created successfully",
+            "message": "User Purchased Quest successfully",
             "user_quest_uuid": user_quest.uuid,
             "user_id": user.uuid,
             "quest_id": quest.uuid,
@@ -721,7 +709,7 @@ def create_user_quest(request):
             "quest_total_duration": quest.total_duration,
             "location": quest.location.name,
             "max_people": quest.max_people,
-            "quest_tasks": quest_tasks,
+            "total_tasks": quest_tasks.count(),
             "is_completed": "False",
         }
         return JsonResponse(response_data, safe=False)
@@ -741,22 +729,9 @@ def get_user_quest_by_user(request, pk):
         user_quests = User_Quest.objects.filter(user=user)
 
         serialized_data = []
-        serialized_task = []
         for user_quest in user_quests:
             quest = user_quest.quest
-            quest_tasks = Quest_Task.objects.filter(quest=quest)
-            for quest_task in quest_tasks:
-                serialized_task.append(
-                    {
-                        "task_uuid": quest_task.task.uuid,
-                        "task_name": quest_task.task.name,
-                        "task_description": quest_task.task.description,
-                        "task_points": quest_task.task.points,
-                        "task_duration": quest_task.task.duration,
-                        "day_number": quest_task.day_number,
-                        "is_completed": quest_task.is_completed,
-                    }
-                )
+            quest_tasks = Quest_Task.objects.filter(quest=quest).count()
             serialized_data.append(
                 {
                     "quest_uuid": quest.uuid,
@@ -766,7 +741,7 @@ def get_user_quest_by_user(request, pk):
                     "quest_total_duration": quest.total_duration,
                     "quest_max_people": quest.max_people,
                     "location": quest.location.name,
-                    "tasks": serialized_task,
+                    "total_tasks": quest_tasks,
                     "is_completed": user_quest.is_completed,
                 }
             )
@@ -801,9 +776,6 @@ def query(payload):
     headers_str = os.getenv("headers")
 
     headers = json.loads(headers_str) if headers_str else {}
-
-    print(API_URL, "API_URL")
-    print(headers, "headers")
 
     response = requests.post(API_URL, headers=headers, json={"inputs": payload})
     return response.json()
@@ -907,42 +879,32 @@ def quest_search_results(request):
         search_query = str(request_data.get("search_query"))
 
         # get the vector of the search query
-        query_embeedings = query(search_query)
+        query_response = query(search_query)
 
-        # get all the quest embeedings
-        quest_embeedings = QuestEmbeddings.objects.order_by(
-            L2Distance("quest_vector", query_embeedings)
+        # get all the quest embeddings
+        quest_embeddings = QuestEmbeddings.objects.order_by(
+            L2Distance("quest_vector", query_response)
         )
 
         serialized_data = []
-        serialized_task = []
 
-        for quest in quest_embeedings:
-            quest_tasks = Quest_Task.objects.filter(quest=quest)
-            for quest_task in quest_tasks:
-                serialized_task.append(
-                    {
-                        "task_uuid": quest_task.task.uuid,
-                        "task_name": quest_task.task.name,
-                        "task_description": quest_task.task.description,
-                        "task_points": quest_task.task.points,
-                        "task_duration": quest_task.task.duration,
-                        "day_number": quest_task.day_number,
-                    }
-                )
-        serialized_data.append(
-            {
-                "quest_uuid": quest.uuid,
-                "quest_name": quest.name,
-                "quest_description": quest.description,
-                "quest_total_points": quest.total_points,
-                "quest_total_duration": quest.total_duration,
-                "quest_max_people": quest.max_people,
-                "location": quest.location.name,
-                "tasks": serialized_task,
-            }
-        )
+        for quest_embedding in quest_embeddings:
+            quest = Quest.objects.get(uuid=quest_embedding.quest_uuid)
 
-        return JsonResponse(serialized_data, safe=False)
+            serialized_data.append(
+                {
+                    "quest_uuid": quest.uuid,
+                    "quest_name": quest.name,
+                    "quest_description": quest.description,
+                    "quest_total_points": quest.total_points,
+                    "quest_total_duration": quest.total_duration,
+                    "quest_max_people": quest.max_people,
+                    "location": quest.location.name,
+                }
+            )
+
+        filtered_data = serialized_data[:5]
+
+        return JsonResponse(filtered_data, safe=False)
     else:
         return HttpResponse("Quest Search Results Page")

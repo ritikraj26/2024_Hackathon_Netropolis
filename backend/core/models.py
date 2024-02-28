@@ -146,7 +146,7 @@ class User_Quest(models.Model):
 
 
 class QuestEmbeddings(models.Model):
-    quest_uuid = models.UUIDField()
+    quest_uuid = models.UUIDField(unique=True)
     quest_vector = VectorField(dimensions=384)  # This field type is a guess.
 
     class Meta:

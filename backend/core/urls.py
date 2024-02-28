@@ -31,6 +31,11 @@ urlpatterns = [
         name="get_task_by_location",
     ),
     path(
+        "get/task/quest/<uuid:pk>",
+        core.views.get_task_by_quest,
+        name="get_task_by_quest",
+    ),
+    path(
         "get/task/category/<uuid:pk>",
         core.views.get_task_by_category,
         name="get_task_by_category",
@@ -58,12 +63,16 @@ urlpatterns = [
         name="get_quest_by_location_type",
     ),
     path(
-        "get/quest/user/<uuid:pk>",
-        core.views.get_quest_by_user,
-        name="get_quest_by_user",
+        "get/quest/createdBy/<uuid:pk>",
+        core.views.get_quest_by_createdBy,
+        name="get_quest_by_createdBy",
     ),
     # User Quest
-    path("create/user_quest", core.views.create_user_quest, name="create_user_quest"),
+    path(
+        "purchased/user_quest",
+        core.views.purchased_user_quest,
+        name="purchased_user_quest",
+    ),
     path(
         "get/user_quest/user/<uuid:pk>",
         core.views.get_user_quest_by_user,
