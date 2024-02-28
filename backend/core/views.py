@@ -91,8 +91,17 @@ def signup_manager(request):
             organization=organization,
             points=points,
         )
-        return HttpResponse("Manager created successfully")
 
+        response_data = {
+            "message": "Manager created successfully",
+            "manager_uuid": participant.uuid,
+            "manager_email": participant.email,
+            "manager_first_name": participant.first_name,
+            "manager_last_name": participant.last_name,
+            "manager_role": participant.role,
+        }
+
+        return JsonResponse(response_data, safe=False)
     else:
         return HttpResponse("Signup Page")
 
@@ -105,12 +114,26 @@ def login_manager(request):
 
         email = request_data.get("email")
         password = request_data.get("password")
-        print(email, password)
+
         user = authenticate(username=email, password=password)
-        print(user)
+        print(user, "User data")
         if user is not None:
             login(request, user)
-            return HttpResponse("Logged in successfully")
+
+            participant_deatils = Participant.objects.get(user=user)
+
+            response_data = {
+                "message": "Logged in successfully",
+                "manager_uuid": participant_deatils.uuid,
+                "manager_email": participant_deatils.email,
+                "manager_first_name": participant_deatils.first_name,
+                "manager_last_name": participant_deatils.last_name,
+                "manager_role": participant_deatils.role,
+                "manager_location": participant_deatils.location.name,
+                "manager_points": participant_deatils.points,
+                "manager_organization": participant_deatils.organization,
+            }
+            return JsonResponse(response_data, safe=False)
         else:
             return HttpResponse("Invalid credentials", status=401)
     else:
@@ -173,7 +196,17 @@ def signup_user(request):
             organization=organization,
             points=points,
         )
-        return HttpResponse("User created successfully")
+        response_data = {
+            "message": "User created successfully",
+            "user_uuid": participant.uuid,
+            "user_email": participant.email,
+            "user_first_name": participant.first_name,
+            "user_last_name": participant.last_name,
+            "user_role": participant.role,
+            "user_location": participant.location.name,
+            "user_points": participant.points,
+        }
+        return JsonResponse(response_data, safe=False)
 
     else:
         return HttpResponse("Signup Page")
@@ -190,7 +223,19 @@ def login_user(request):
         user = authenticate(username=email, password=password)
         if user is not None:
             login(request, user)
-            return HttpResponse("Logged in successfully")
+            participant_deatils = Participant.objects.get(user=user)
+            response_data = {
+                "message": "Logged in successfully",
+                "user_uuid": participant_deatils.uuid,
+                "user_email": participant_deatils.email,
+                "user_first_name": participant_deatils.first_name,
+                "user_last_name": participant_deatils.last_name,
+                "user_role": participant_deatils.role,
+                "user_location": participant_deatils.location.name,
+                "user_points": participant_deatils.points,
+                "user_organization": participant_deatils.organization,
+            }
+            return JsonResponse(response_data, safe=False)
         else:
             return HttpResponse("Invalid credentials", status=401)
     else:
@@ -424,7 +469,20 @@ def create_quest(request):
                 is_completed=False,
                 day_number=day_number,
             )
-        return HttpResponse("Quest created successfully")
+
+        response_data = {
+            "message": "Quest created successfully",
+            "quest_uuid": quest.uuid,
+            "quest_name": quest.name,
+            "quest_description": quest.description,
+            "quest_total_points": quest.total_points,
+            "quest_total_duration": quest.total_duration,
+            "location": quest.location.name,
+            "creator_id": creator.uuid,
+            "quest_max_people": quest.max_people,
+            "tasks": tasks,
+        }
+        return JsonResponse(response_data, safe=False)
     else:
         return HttpResponse("Create Quest Page")
 
@@ -607,3 +665,127 @@ def get_quest_by_user(request, pk):
         )
 
         return JsonResponse(serialized_data, safe=False)
+
+
+@csrf_exempt
+def create_user_quest(request):
+    if request.method == "POST":
+        request_data_str = request.body.decode("utf-8")
+        request_data = json.loads(request_data_str)
+
+        user_uuid = request_data.get("user_uuid")
+        quest_uuid = request_data.get("quest_uuid")
+
+        try:
+            user = Participant.objects.get(uuid=user_uuid)
+        except Participant.DoesNotExist:
+            return HttpResponse("User does not exist", status=400)
+
+        try:
+            quest = Quest.objects.get(uuid=quest_uuid)
+        except Quest.DoesNotExist:
+            return HttpResponse("Quest does not exist", status=400)
+
+        quest_tasks = []
+
+        for quest_task in Quest_Task.objects.filter(quest=quest):
+            quest_tasks.append(
+                {
+                    "task_uuid": quest_task.task.uuid,
+                    "task_name": quest_task.task.name,
+                    "task_description": quest_task.task.description,
+                    "task_points": quest_task.task.points,
+                    "task_duration": quest_task.task.duration,
+                    "day_number": quest_task.day_number,
+                    "is_completed": quest_task.is_completed,
+                }
+            )
+
+        user_quest = User_Quest.objects.create(
+            uuid=uuid.uuid4(), user=user, quest=quest, is_completed=False
+        )
+
+        response_data = {
+            "message": "User Quest created successfully",
+            "user_quest_uuid": user_quest.uuid,
+            "user_id": user.uuid,
+            "quest_id": quest.uuid,
+            "quest_name": quest.name,
+            "quest_description": quest.description,
+            "quest_total_points": quest.total_points,
+            "quest_total_duration": quest.total_duration,
+            "location": quest.location.name,
+            "max_people": quest.max_people,
+            "quest_tasks": quest_tasks,
+            "is_completed": "False",
+        }
+        return JsonResponse(response_data, safe=False)
+    else:
+        return HttpResponse("Create User Quest Page")
+
+
+@csrf_exempt
+def get_user_quest_by_user(request, pk):
+    if request.method == "GET":
+
+        try:
+            user = Participant.objects.get(uuid=pk)
+        except Participant.DoesNotExist:
+            return HttpResponse("User does not exist", status=400)
+
+        user_quests = User_Quest.objects.filter(user=user)
+
+        serialized_data = []
+        serialized_task = []
+        for user_quest in user_quests:
+            quest = user_quest.quest
+            quest_tasks = Quest_Task.objects.filter(quest=quest)
+            for quest_task in quest_tasks:
+                serialized_task.append(
+                    {
+                        "task_uuid": quest_task.task.uuid,
+                        "task_name": quest_task.task.name,
+                        "task_description": quest_task.task.description,
+                        "task_points": quest_task.task.points,
+                        "task_duration": quest_task.task.duration,
+                        "day_number": quest_task.day_number,
+                        "is_completed": quest_task.is_completed,
+                    }
+                )
+            serialized_data.append(
+                {
+                    "quest_uuid": quest.uuid,
+                    "quest_name": quest.name,
+                    "quest_description": quest.description,
+                    "quest_total_points": quest.total_points,
+                    "quest_total_duration": quest.total_duration,
+                    "quest_max_people": quest.max_people,
+                    "location": quest.location.name,
+                    "tasks": serialized_task,
+                    "is_completed": user_quest.is_completed,
+                }
+            )
+
+        return JsonResponse(serialized_data, safe=False)
+    else:
+        return HttpResponse("Get User Quest Page")
+
+
+@csrf_exempt
+def get_user_by_uuid(request, pk):
+    if request.method == "GET":
+        user = Participant.objects.get(uuid=pk)
+        serialized_user = Participant_Serializer(user)
+        return JsonResponse(serialized_user.data, safe=False)
+    else:
+        return HttpResponse("Get User Page")
+
+
+@csrf_exempt
+def get_manager_by_uuid(request, pk):
+    if request.method == "GET":
+        manager = Participant.objects.get(uuid=pk)
+        serialized_manager = Participant_Serializer(manager)
+        return JsonResponse(serialized_manager.data, safe=False)
+    else:
+        return HttpResponse("Get Manager Page")

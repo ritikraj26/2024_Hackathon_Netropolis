@@ -62,4 +62,18 @@ urlpatterns = [
         core.views.get_quest_by_user,
         name="get_quest_by_user",
     ),
+    # User Quest
+    path("create/user_quest", core.views.create_user_quest, name="create_user_quest"),
+    path(
+        "get/user_quest/user/<uuid:pk>",
+        core.views.get_user_quest_by_user,
+        name="get_user_quest_by_user",
+    ),
+    # Participant details
+    path("get/user/<uuid:pk>", core.views.get_user_by_uuid, name="get_user_by_uuid"),
+    path(
+        "get/manager/<uuid:pk>",
+        core.views.get_manager_by_uuid,
+        name="get_manager_by_uuid",
+    ),
 ]
