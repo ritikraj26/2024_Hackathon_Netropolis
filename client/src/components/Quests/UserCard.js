@@ -6,7 +6,7 @@ const SkeletonUserQuest = () => {
   return (
     <div className="relative animate-pulse ml-4">
       <Card
-        className="max-w-[230px]  max-sm:max-w-[240px] rounded-3xl"
+        className="w-[230px]  max-sm:w-[240px] rounded-3xl"
         renderImage={() => (
           <div className="h-[180px] max-sm:h-[120px] bg-primary-100 rounded-t-3xl "></div>
         )}
@@ -37,13 +37,9 @@ const UserQuest = (props) => {
     <div className="relative mx-4">
       <button onClick={handleClick}>
         <Card
-          className="max-w-[230px] max-sm:max-w-[240px] rounded-3xl"
+          className="w-[230px] max-sm:w-[240px] rounded-3xl"
           renderImage={() => (
-            <img
-              src={process.env.PUBLIC_URL + "/jp-as-1.jpg"}
-              alt="image 1"
-              className="h-[180px] max-sm:h-[120px] rounded-t-3xl opacity-65 object-cover"
-            />
+            <div className="bg-gradient-to-r from-purple-200 to-pink-200 h-[180px] max-sm:h-[120px] rounded-t-3xl opacity-65 object-cover"></div>
           )}
         >
           <div className="quest-location absolute top-0 left-0 p-6">
@@ -57,11 +53,19 @@ const UserQuest = (props) => {
               </p>
               <p className="text-center text-gray-600">Tasks</p>
             </div>
-            <div className="basis-1/2">
-              <p className="font-bold text-3xl text-center ">
-                {props.total_duration}
-              </p>
-              <p className="text-center text-gray-600">Duration</p>
+            <div className="flex flex-row">
+              <div className="basis-1/2">
+                <p className="font-bold text-3xl text-center ">
+                  {props.num_tasks}
+                </p>
+                <p className="text-center text-gray-600">Tasks</p>
+              </div>
+              <div className="basis-1/2">
+                <p className="font-bold text-3xl text-center ">
+                  {props.total_duration}
+                </p>
+                <p className="text-center text-gray-600">Duration</p>
+              </div>
             </div>
           </div>
         </Card>
