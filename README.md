@@ -56,6 +56,7 @@ Develop core platform functions to foster revitalization and user engagement thr
 ## Installation
 
 **Frontend** 
+* Modify `client/.env` and enter the backend URL.
 * `npm install`
 * `npm start`
 
