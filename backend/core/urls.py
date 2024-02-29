@@ -31,6 +31,11 @@ urlpatterns = [
         name="get_task_by_location",
     ),
     path(
+        "get/task/creatorId/<uuid:pk>",
+        core.views.get_task_by_creatorId,
+        name="get_task_by_creatorId",
+    ),
+    path(
         "get/task/quest/<uuid:pk>",
         core.views.get_task_by_quest,
         name="get_task_by_quest",

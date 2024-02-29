@@ -74,7 +74,7 @@ class Task(models.Model):
     uuid = models.UUIDField(primary_key=True, editable=False)
     name = models.CharField(max_length=150)
     description = models.TextField()
-    created_by = models.TextField(default="none")
+    creator_uuid = models.ForeignKey(Participant, on_delete=models.CASCADE)
     points = models.PositiveIntegerField()
     duration = models.PositiveIntegerField()
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
@@ -131,11 +131,12 @@ class Quest_Task(models.Model):
 
 class User_Quest(models.Model):
     uuid = models.UUIDField(primary_key=True, editable=False)
+    is_completed = models.BooleanField(default=False)
+    description = models.TextField(default="")
     user = models.ForeignKey(Participant, on_delete=models.CASCADE)
     quest = models.ForeignKey(Quest, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    is_completed = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.user.email} - {self.quest.name}"
