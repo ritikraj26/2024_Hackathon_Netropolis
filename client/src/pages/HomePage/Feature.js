@@ -1,8 +1,8 @@
 const Feature = () => {
   return (
     <div className="hero-testimonials w-full basis-1/5">
-      <div className="py-8 px-4 mx-auto sm:py-16 lg:px-6">
-        <div className="max-w-screen-md mb-8 lg:mb-16">
+      <div className="py-8 px-4 mx-auto sm:py-16 lg:px-6 relative">
+        <div className="max-w-screen-md mb-8 lg:mb-16 px-4 relative left-1/2 -translate-x-1/2">
           <h2 className="text-center mb-4 text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white">
             Designed for business teams like yours
           </h2>
