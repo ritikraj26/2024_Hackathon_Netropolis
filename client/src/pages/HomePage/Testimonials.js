@@ -1,6 +1,6 @@
 const Testimonials = () => {
   return (
-    <div className="hero-testimonials p-5">
+    <div className="hero-testimonials p-20">
       <figure className="max-w-screen-md">
         <div className="flex flex-row justify-center mb-4 text-yellow-300">
           <svg
@@ -51,23 +51,26 @@ const Testimonials = () => {
         </div>
         <blockquote>
           <p className="text-center text-2xl font-semibold text-gray-900 dark:text-white">
-            "Flowbite is just awesome. It contains tons of predesigned
-            components and pages starting from login screen to complex
-            dashboard. Perfect choice for your next SaaS application."
+            "Our village was struggling to find young people willing to learn traditional farming techniques. Through this platform, we connected with several passionate individuals.  Their help during the harvest was invaluable, and they left with a deep appreciation for our way of life."
+          </p>
+        </blockquote>
+        <blockquote>
+          <p className="text-center text-2xl font-semibold text-gray-900 dark:text-white">
+            "I felt disconnected living in the city. This platform helped me find a quest focused on cultural preservation. Living and working alongside a small community reignited my passion and opened my eyes to the real Japan."
           </p>
         </blockquote>
         <figcaption className="flex justify-center items-center mt-6 space-x-3 rtl:space-x-reverse">
           <img
             className="w-6 h-6 rounded-full"
-            src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/bonnie-green.png"
+            src="https://i.pinimg.com/originals/9a/82/e7/9a82e7aaea38b8222fe48203d4691ecd.jpg"
             alt="profile picture"
           />
           <div className="flex items-center divide-x-2 rtl:divide-x-reverse divide-gray-300 dark:divide-gray-700">
             <cite className="pe-3 font-medium text-gray-900 dark:text-white">
-              Bonnie Green
+              Netropopils LLC
             </cite>
             <cite className="ps-3 text-sm text-gray-500 dark:text-gray-400">
-              CTO at Flowbite
+              Japan
             </cite>
           </div>
         </figcaption>
