@@ -24,7 +24,11 @@ def add_location(request):
         description = request_data.get("description")
 
         location = Location.objects.create(name=name, description=description)
-        return HttpResponse("Location created successfully")
+
+        response_data = {
+            "message": "Location created successfully",
+        }
+        return JsonResponse(response_data, status=200, safe=False)
     else:
         return HttpResponse("Create Location Page")
 
@@ -296,7 +300,10 @@ def add_category(request):
         name = request_data.get("name")
         category_uuid = uuid.uuid4()
         category = Category.objects.create(uuid=category_uuid, name=name)
-        return HttpResponse("Category created successfully")
+        response_data = {
+            "message": "Category created successfully",
+        }
+        return JsonResponse(response_data, status=200, safe=False)
     else:
         return HttpResponse("Create Category Page")
 
@@ -325,35 +332,44 @@ def create_task(request):
 
         name = request_data.get("name")
         description = request_data.get("description")
-        created_by = request_data.get("created_by")
+        creator_uuid = request_data.get("creator_id")
 
         category = None
         location = None
         location_type = None
+        creator = None
 
-        category_name = request_data.get("category_name")
+        category_id = request_data.get("category_id")
+
         try:
-            category = Category.objects.get(name=category_name)
+            category = Category.objects.get(uuid=category_id)
         except Category.DoesNotExist:
             return HttpResponse("Category does not exist", status=400)
         except Category.MultipleObjectsReturned:
             return HttpResponse("Multiple Categories with same name", status=400)
 
-        location_name = request_data.get("location_name")
+        location_id = request_data.get("location_id")
+
         try:
-            location = Location.objects.get(name=location_name)
+            location = Location.objects.get(uuid=location_id)
         except Location.DoesNotExist:
             return HttpResponse("Location does not exist", status=400)
         except Location.MultipleObjectsReturned:
             return HttpResponse("Multiple Locations with same name", status=400)
 
-        location_type_name = request_data.get("location_type_name")
+        location_type_id = request_data.get("location_type_id")
+
         try:
-            location_type = Location_Type.objects.get(name=location_type_name)
+            location_type = Location_Type.objects.get(uuid=location_type_id)
         except Location_Type.DoesNotExist:
             return HttpResponse("Location Type does not exist", status=400)
         except Location_Type.MultipleObjectsReturned:
             return HttpResponse("Multiple Location Types with same name", status=400)
+
+        try:
+            creator = Participant.objects.get(uuid=creator_uuid)
+        except Participant.DoesNotExist:
+            return HttpResponse("Creator does not exist", status=400)
 
         points = request_data.get("points")
         duration = request_data.get("duration")
@@ -363,16 +379,36 @@ def create_task(request):
             uuid=task_uuid,
             name=name,
             description=description,
-            created_by=created_by,
+            creator_uuid=creator,
             category=category,
             location=location,
             location_type=location_type,
             points=points,
             duration=duration,
         )
-        return HttpResponse("Task created successfully")
+
+        response = {
+            "message": "Task created successfully",
+            "task_uuid": task.uuid,
+            "task_name": task.name,
+            "task_description": task.description,
+            "task_points": task.points,
+            "task_duration": task.duration,
+            "creator_uuid": task.creator_uuid.uuid,
+        }
+        return JsonResponse(response, safe=False)
     else:
         return HttpResponse("Create Task Page")
+
+
+@csrf_exempt
+def get_task_by_uuid(request, pk):
+    if request.method == "GET":
+        task = Task.objects.get(uuid=pk)
+        serialized_task = Task_Serializer(task)
+        return JsonResponse(serialized_task.data, safe=False)
+    else:
+        return HttpResponse("Get Task by UUID Page")
 
 
 @csrf_exempt
@@ -384,10 +420,31 @@ def get_tasks(request):
 
 
 @csrf_exempt
+def get_task_by_creatorId(request, pk):
+    if request.method == "GET":
+        try:
+            creator = Participant.objects.get(uuid=pk)
+        except Participant.DoesNotExist:
+            return HttpResponse("Creator does not exist", status=400)
+
+        try:
+            tasks = Task.objects.filter(creator_uuid=creator.uuid)
+        except Task.DoesNotExist:
+            return HttpResponse("Task does not exist", status=400)
+
+        serialized_tasks = Task_Serializer(tasks, many=True)
+        return JsonResponse(serialized_tasks.data, safe=False)
+    else:
+        return HttpResponse("Get Task by CreatorId Page")
+
+
+@csrf_exempt
 def get_task_by_location(request, pk):
     if request.method == "GET":
         location = Location.objects.get(uuid=pk)
         tasks = Task.objects.filter(location=location.uuid)
+
+        print("Tasks 1 ", tasks)
         serialized_tasks = Task_Serializer(tasks, many=True)
         return JsonResponse(serialized_tasks.data, safe=False)
 
@@ -395,30 +452,27 @@ def get_task_by_location(request, pk):
 @csrf_exempt
 def get_task_by_quest(request, pk):
     if request.method == "GET":
-        quest = Quest.objects.get(uuid=pk)
+        try:
+            quest = Quest.objects.get(uuid=pk)
+            quest_tasks = Quest_Task.objects.filter(quest=quest)
 
-        quest_tasks = Quest_Task.objects.filter(quest=quest)
+            # Create a list to store task data including day_number
+            task_data = []
 
-        for quest_task in quest_tasks:
-            print(quest_task.task, "Quest Task")
+            for quest_task in quest_tasks:
+                task = quest_task.task
+                # Serialize the task including day_number
+                serialized_task = Task_Serializer(task).data
+                serialized_task["day_number"] = quest_task.day_number
+                task_data.append(serialized_task)
 
-        serialized_tasks = []
-        for quest_task in quest_tasks:
-            task = quest_task.task
-            serialized_tasks.append(
-                {
-                    "task_uuid": task.uuid,
-                    "task_name": task.name,
-                    "task_description": task.description,
-                    "task_points": task.points,
-                    "task_duration": task.duration,
-                    "day_number": quest_task.day_number,
-                }
-            )
+            return JsonResponse(task_data, safe=False)
 
-        return JsonResponse(serialized_tasks, safe=False)
+        except Quest.DoesNotExist:
+            return JsonResponse({"error": "Quest not found"}, status=404)
+
     else:
-        return HttpResponse("Get Task by Quest Page")
+        return JsonResponse({"error": "Method not allowed"}, status=405)
 
 
 @csrf_exempt
@@ -519,6 +573,30 @@ def create_quest(request):
         return JsonResponse(response_data, safe=False)
     else:
         return HttpResponse("Create Quest Page")
+
+
+@csrf_exempt
+def get_quests_by_questId(request, pk):
+    if request.method == "GET":
+        quest = Quest.objects.get(uuid=pk)
+
+        total_tasks = Quest_Task.objects.filter(quest=quest).count()
+
+        response_data = {
+            "quest_uuid": quest.uuid,
+            "quest_name": quest.name,
+            "quest_description": quest.description,
+            "quest_total_points": quest.total_points,
+            "quest_total_duration": quest.total_duration,
+            "quest_max_people": quest.max_people,
+            "location": quest.location.name,
+            "creator_id": quest.created_by.uuid,
+            "total_tasks": total_tasks,
+        }
+
+        return JsonResponse(response_data, safe=False)
+    else:
+        return HttpResponse("Get Quests by QuestId Page")
 
 
 @csrf_exempt
@@ -707,8 +785,10 @@ def purchased_user_quest(request):
         request_data_str = request.body.decode("utf-8")
         request_data = json.loads(request_data_str)
 
-        user_uuid = request_data.get("user_uuid")
-        quest_uuid = request_data.get("quest_uuid")
+        user_uuid = request_data.get("user_id")
+        quest_uuid = request_data.get("quest_id")
+        description = request_data.get("description")
+        num_people = request_data.get("num_people")
 
         try:
             user = Participant.objects.get(uuid=user_uuid)
@@ -736,7 +816,12 @@ def purchased_user_quest(request):
             )
 
         user_quest = User_Quest.objects.create(
-            uuid=uuid.uuid4(), user=user, quest=quest, is_completed=False
+            uuid=uuid.uuid4(),
+            user=user,
+            quest=quest,
+            is_completed=False,
+            description=description,
+            num_people=num_people,
         )
 
         response_data = {
@@ -749,8 +834,13 @@ def purchased_user_quest(request):
             "quest_total_points": quest.total_points,
             "quest_total_duration": quest.total_duration,
             "location": quest.location.name,
-            "max_people": quest.max_people,
-            "total_tasks": quest_tasks.count(),
+            "quest_max_people": quest.max_people,
+            "creator_id": quest.created_by.uuid,
+            "num_people": user_quest.num_people,
+            "description": user_quest.description,
+            "total_tasks": len(
+                quest_tasks
+            ),  # Use len() to get the total number of tasks
             "is_completed": "False",
         }
         return JsonResponse(response_data, safe=False)
@@ -785,6 +875,8 @@ def get_user_quest_by_user(request, pk):
                     "total_tasks": quest_tasks,
                     "creator_id": quest.created_by.uuid,
                     "is_completed": user_quest.is_completed,
+                    "userquest_description": user_quest.description,
+                    "num_people": user_quest.num_people,
                 }
             )
 
