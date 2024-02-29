@@ -412,6 +412,7 @@ def get_task_by_quest(request, pk):
                     "task_description": task.description,
                     "task_points": task.points,
                     "task_duration": task.duration,
+                    "day_number": quest_task.day_number,
                 }
             )
 
@@ -544,6 +545,7 @@ def get_quest_by_location(request, pk):
                     "quest_total_duration": quest.total_duration,
                     "quest_max_people": quest.max_people,
                     "location": quest.location.name,
+                    "creator_id": quest.created_by.uuid,
                     "total_tasks": total_tasks,
                 }
             )
@@ -583,6 +585,7 @@ def get_quest_by_category(request, pk):
                     "quest_total_duration": quest.total_duration,
                     "quest_max_people": quest.max_people,
                     "location": quest.location.name,
+                    "creator_id": quest.created_by.uuid,
                     "total_tasks": total_tasks,
                 }
             )
@@ -622,6 +625,7 @@ def get_quest_by_location_type(request, pk):
                     "quest_total_duration": quest.total_duration,
                     "quest_max_people": quest.max_people,
                     "location": quest.location.name,
+                    "creator_id": quest.created_by.uuid,
                     "total_tasks": total_tasks,
                 }
             )
@@ -647,6 +651,7 @@ def get_quest_by_createdBy(request, pk):
             serialized_data.append(
                 {
                     "quest_uuid": quest.uuid,
+                    "creator_id": quest.created_by.uuid,
                     "quest_name": quest.name,
                     "quest_description": quest.description,
                     "quest_total_points": quest.total_points,
@@ -658,6 +663,42 @@ def get_quest_by_createdBy(request, pk):
             )
 
         return JsonResponse(serialized_data, safe=False)
+
+
+@csrf_exempt
+def compare_quest_by_createdBy(request):
+    if request.method == "POST":
+        request_data_str = request.body.decode("utf-8")
+        request_data = json.loads(request_data_str)
+
+        user_uuid = request_data.get("user_id")
+        quest_uuid = request_data.get("quest_id")
+
+        try:
+            user = Participant.objects.get(uuid=user_uuid)
+            print(user, "User")
+        except Participant.DoesNotExist:
+            return HttpResponse("User does not exist", status=400)
+
+        try:
+            quest = Quest.objects.get(uuid=quest_uuid)
+        except Quest.DoesNotExist:
+            return HttpResponse("Quest does not exist", status=400)
+
+        role = user.role
+
+        if quest.created_by == user and role == "user":
+            responsedata = {
+                "purchased": "True",
+            }
+        else:
+            responsedata = {
+                "purchased": "False",
+            }
+
+        return JsonResponse(responsedata, safe=False)
+    else:
+        return HttpResponse("Compare Quest by CreatedBy Page")
 
 
 @csrf_exempt
@@ -742,6 +783,7 @@ def get_user_quest_by_user(request, pk):
                     "quest_max_people": quest.max_people,
                     "location": quest.location.name,
                     "total_tasks": quest_tasks,
+                    "creator_id": quest.created_by.uuid,
                     "is_completed": user_quest.is_completed,
                 }
             )
@@ -890,6 +932,7 @@ def quest_search_results(request):
 
         for quest_embedding in quest_embeddings:
             quest = Quest.objects.get(uuid=quest_embedding.quest_uuid)
+            quest_tasks = Quest_Task.objects.filter(quest=quest).count()
 
             serialized_data.append(
                 {
@@ -899,11 +942,13 @@ def quest_search_results(request):
                     "quest_total_points": quest.total_points,
                     "quest_total_duration": quest.total_duration,
                     "quest_max_people": quest.max_people,
+                    "total_tasks": quest_tasks,
+                    "creator_id": quest.created_by.uuid,
                     "location": quest.location.name,
                 }
             )
 
-        filtered_data = serialized_data[:5]
+        filtered_data = serialized_data[:10]
 
         return JsonResponse(filtered_data, safe=False)
     else:
