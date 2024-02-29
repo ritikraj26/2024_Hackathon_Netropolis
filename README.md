@@ -9,8 +9,6 @@
 * [Features](#features)
 * [Technologies Used](#technologies-used)
 * [Team Members](#team-members)
-* [Contributing](#contributing)
-* [License](#license)
 
 ## Background
 
@@ -72,10 +70,3 @@ Develop core platform functions to foster revitalization and user engagement thr
 * Rohan Raju Meshram
 * Ritik Raj
 
-## Contributing
-
-[Add guidelines for contributions at this early stage or ideas for future expansion.]
-
-## License
-
-[Specify license type - MIT, Apache 2.0, GPLv3, etc.] 
