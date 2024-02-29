@@ -51,12 +51,11 @@ const Testimonials = () => {
         </div>
         <blockquote>
           <p className="text-center text-2xl font-semibold text-gray-900 dark:text-white">
-            "Our village was struggling to find young people willing to learn traditional farming techniques. Through this platform, we connected with several passionate individuals.  Their help during the harvest was invaluable, and they left with a deep appreciation for our way of life."
-          </p>
-        </blockquote>
-        <blockquote>
-          <p className="text-center text-2xl font-semibold text-gray-900 dark:text-white">
-            "I felt disconnected living in the city. This platform helped me find a quest focused on cultural preservation. Living and working alongside a small community reignited my passion and opened my eyes to the real Japan."
+            "Our village was struggling to find young people willing to learn
+            traditional farming techniques. Through this platform, we connected
+            with several passionate individuals. Their help during the harvest
+            was invaluable, and they left with a deep appreciation for our way
+            of life."
           </p>
         </blockquote>
         <figcaption className="flex justify-center items-center mt-6 space-x-3 rtl:space-x-reverse">

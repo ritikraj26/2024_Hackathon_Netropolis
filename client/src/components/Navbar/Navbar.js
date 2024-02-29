@@ -85,10 +85,10 @@ const TopNavbar = (props) => {
     <AuthNavContext.Provider value={{}}>
       <div className="box-border m-0 relative sticky z-50 w-full h-16 bg-white border-b-2 border-primary-200 left-0 top-0 dark:bg-gray-700 dark:border-gray-600 ">
         <Navbar fluid theme={navbarTheme}>
-          <Navbar.Brand href="https://flowbite-react.com">
+          <Navbar.Brand href="/">
             <img
-              src="https://flowbite.com/docs/images/logo.svg"
-              className="mr-3 h-6 sm:h-9"
+              src={process.env.PUBLIC_URL + "/logo.jpeg"}
+              className="mr-3 h-6 sm:h-9 rounded rounded-full"
               alt="Logo"
             />
             <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
