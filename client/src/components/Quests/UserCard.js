@@ -43,8 +43,12 @@ const UserQuest = (props) => {
           )}
         >
           <div className="quest-location absolute top-0 left-0 p-6">
-            <h5 className="tracking-tight  max-w-xs">{props.location}</h5>
-            <h3 className="text-2xl font-bold ">{props.quest_name}</h3>
+            <h5 className="text-left tracking-tight  max-w-xs">
+              {props.location}
+            </h5>
+            <h3 className="text-left text-2xl font-bold ">
+              {props.quest_name}
+            </h3>
           </div>
 
           <div className="flex flex-row">
@@ -72,6 +76,7 @@ const UserQuest = (props) => {
         total_points={props.total_points}
         description={props.description}
         quest_uuid={props.quest_uuid}
+        creator_uuid={props.creator_uuid}
         showQuest={showQuest}
         setShowQuest={setShowQuest}
       />

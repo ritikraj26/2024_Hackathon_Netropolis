@@ -115,7 +115,6 @@ const TopNavbar = (props) => {
                   {userObj?.email}
                 </span>
               </Dropdown.Header>
-              <Dropdown.Item>Settings</Dropdown.Item>
               <Dropdown.Item onClick={handleLogout}>Sign out</Dropdown.Item>
             </Dropdown>
             <Navbar.Toggle />
@@ -140,7 +139,7 @@ const TopNavbar = (props) => {
               active={window.location.pathname === "/leaderboard"}
               className="text-xl"
             >
-              Leaderboard
+              Profile
             </Navbar.Link>
           </Navbar.Collapse>
         </Navbar>

@@ -158,6 +158,42 @@ const PublishQuest = ({ questData }) => {
   });
 };
 
+const QuestPurchasedByUser = ({ quest_id, user_id }) => {
+  return new Promise(async (resolve, reject) => {
+    const queryOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        quest_id: quest_id,
+        user_id: user_id,
+      }),
+    };
+
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND_URL}/api/`,
+        queryOptions
+      );
+
+      if (response.status >= 200 && response.status < 300) {
+        const data = await response.json();
+        if (data === null || data === undefined) {
+          reject("No data found");
+        } else {
+          resolve(data.purchased === "true" ? true : false);
+        }
+      } else {
+        throw new Error(`HTTP Error ${response.status}`);
+      }
+    } catch (error) {
+      console.error("FetchQuestsByCreatorId : ", error);
+      reject(error);
+    }
+  });
+};
+
 export {
   FetchLocations,
   FetchQuestsByLocation,
@@ -165,4 +201,5 @@ export {
   FindQuestsByText,
   FetchQuestsByCreatorId,
   PublishQuest,
+  QuestPurchasedByUser,
 };

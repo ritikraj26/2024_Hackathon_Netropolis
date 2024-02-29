@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import TimelineComponent from "./Timeline";
 import { FetchTasksByQuest } from "../Tasks/TaskQueries";
 import { toast } from "react-toastify";
+import { QuestPurchasedByUser } from "./QuestQueries";
 
 const modalTheme = {
   root: {
@@ -62,6 +63,7 @@ const modalTheme = {
 
 const QuestModal = (props) => {
   const [tasks, setTasks] = useState([]);
+  const [owned, setOwned] = useState(false);
 
   useEffect(() => {
     console.log("Props : ", props);
@@ -73,6 +75,17 @@ const QuestModal = (props) => {
         toast.error("Error fetching tasks");
         console.error("FetchTasksByQuest : ", error);
       });
+
+    // check if user owns the quest (purchased or created)
+    if (props.quest_uuid === props.creator_uuid) {
+      QuestPurchasedByUser()
+        .then((data) => {
+          if (data) setOwned(true);
+        })
+        .catch((error) => {
+          console.error("QuestPurchasedByUser : ", error);
+        });
+    }
   }, [props.quest_uuid, props]);
 
   return (
@@ -107,20 +120,22 @@ const QuestModal = (props) => {
         <div className="max-h-[400px] max-sm:max-h-[300px] px-10 my-2 overflow-x-auto">
           <TimelineComponent tasks={tasks} />
         </div>
-        <Modal.Footer>
-          <button
-            onClick={() => props.setShowQuest(false)}
-            className=" text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-          >
-            Purchase
-          </button>
-          <button
-            onClick={() => props.setShowQuest(false)}
-            className=" text-black border  bg-white-700 hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-          >
-            Decline
-          </button>
-        </Modal.Footer>
+        {!owned && (
+          <Modal.Footer>
+            <button
+              onClick={() => props.setShowQuest(false)}
+              className=" text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+            >
+              Purchase
+            </button>
+            <button
+              onClick={() => props.setShowQuest(false)}
+              className=" text-black border  bg-white-700 hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+            >
+              Decline
+            </button>
+          </Modal.Footer>
+        )}
       </Modal>
     </>
   );

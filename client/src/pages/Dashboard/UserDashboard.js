@@ -3,6 +3,7 @@ import QuestSection from "../../components/Quests/QuestSection";
 import {
   FetchQuestsByLocation,
   FetchQuestsByUserId,
+  FetchQuestsByCreatorId,
 } from "../../components/Quests/QuestQueries";
 import { AuthContext } from "../../App";
 import { useNavigate } from "react-router-dom";
@@ -11,6 +12,7 @@ import { toast } from "react-toastify";
 const UserDashboard = () => {
   const navigate = useNavigate();
   const [userQuests, setUserQuests] = useState(null);
+  const [createdQuests, setCreatedQuests] = useState(null);
   const [featuredQuests, setFeaturedQuests] = useState(null);
   const { authSession } = useContext(AuthContext);
 
@@ -42,6 +44,17 @@ const UserDashboard = () => {
         toast.error("Error in connecting to serverr");
         setFeaturedQuests([]);
       });
+
+    FetchQuestsByCreatorId({ creator_id: authSession.uuid })
+      .then((data) => {
+        console.log("FetchQuestsByCreatorId data : ", data);
+        setCreatedQuests(data);
+      })
+      .catch((err) => {
+        console.error("Dashboard FetchQuestsByCreatorId : ", err);
+        toast.error("Error in connecting to serverr");
+        setCreatedQuests([]);
+      });
   }, [authSession, navigate]);
 
   return (
@@ -55,7 +68,14 @@ const UserDashboard = () => {
           />
         </div> */}
         <div className="w-full h-full min-w-[320px] max-w-[80%] px-4 self-center">
-          <QuestSection title="Your Quests" testVariable={userQuests} />
+          <QuestSection
+            title="Your Created Quests"
+            testVariable={createdQuests}
+          />
+          <QuestSection
+            title="Your Purchased Quests"
+            testVariable={userQuests}
+          />
           <QuestSection title="Featured Quests" testVariable={featuredQuests} />
         </div>
       </div>
