@@ -1,5 +1,10 @@
 # Revitalizing Rural Japan: Bridging Communities for Sustainable Growth
 
+[![youtube video](https://img.youtube.com/vi/KMQWCuP336s/0.jpg)](https://www.youtube.com/watch?v=KMQWCuP336s)
+
+Youtube Link : [https://www.youtube.com/watch?v=KMQWCuP336s](https://www.youtube.com/watch?v=KMQWCuP336s)
+
+
 ## Table of Contents
 - [Revitalizing Rural Japan: Bridging Communities for Sustainable Growth](#revitalizing-rural-japan-bridging-communities-for-sustainable-growth)
   - [Table of Contents](#table-of-contents)
@@ -56,6 +61,7 @@ Develop core platform functions to foster revitalization and user engagement thr
 ## Installation
 
 **Frontend** 
+* Modify `client/.env` and enter the backend URL.
 * `npm install`
 * `npm start`
 
