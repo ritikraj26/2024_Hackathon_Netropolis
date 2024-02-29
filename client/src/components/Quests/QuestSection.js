@@ -33,6 +33,9 @@ const QuestSection = (props) => {
                         quest_name={quest.quest_name}
                         num_tasks={quest.total_tasks}
                         total_duration={quest.quest_total_duration}
+                        total_points={quest.quest_total_points}
+                        description={quest.quest_description}
+                        quest_uuid={quest.quest_uuid}
                         key={quest.quest_uuid}
                       />
                     );

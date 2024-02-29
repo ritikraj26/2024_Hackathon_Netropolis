@@ -1,6 +1,8 @@
 import { Button, Modal, Badge } from "flowbite-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TimelineComponent from "./Timeline";
+import { FetchTasksByQuest } from "../Tasks/TaskQueries";
+import { toast } from "react-toastify";
 
 const modalTheme = {
   root: {
@@ -59,15 +61,26 @@ const modalTheme = {
 };
 
 const QuestModal = (props) => {
-  const [openModal, setOpenModal] = useState(false);
+  const [tasks, setTasks] = useState([]);
+
+  useEffect(() => {
+    console.log("Props : ", props);
+    FetchTasksByQuest({ quest_id: props.quest_uuid })
+      .then((data) => {
+        setTasks(data);
+      })
+      .catch((error) => {
+        toast.error("Error fetching tasks");
+        console.error("FetchTasksByQuest : ", error);
+      });
+  }, [props.quest_uuid, props]);
 
   return (
     <>
-      <Button onClick={() => setOpenModal(true)}>Quest Card</Button>
       <Modal
         theme={modalTheme}
-        show={openModal}
-        onClose={() => setOpenModal(false)}
+        show={props.showQuest}
+        onClose={() => props.setShowQuest(false)}
       >
         <div className="relative">
           <div
@@ -79,30 +92,30 @@ const QuestModal = (props) => {
             }}
           />
           <Modal.Header className="relative z-10 bg-transparent">
-            {props.questName}
-            <Badge className="mx-4">{props.questLocation} Location</Badge>
-            <Badge className="mx-4 ">{props.questPoints} Points</Badge>
+            {props.quest_name}
+            <Badge className="mx-4">{props.location} Location</Badge>
+            <Badge className="mx-4 ">{props.total_points} Points</Badge>
           </Modal.Header>
         </div>
         <Modal.Body>
           <div className="space-y-6">
             <p className="truncate text-base leading-relaxed text-gray-500 dark:text-gray-400 max-sm:text-sm">
-              {props.questDescription}
+              {props.description}
             </p>
           </div>
         </Modal.Body>
         <div className="max-h-[400px] max-sm:max-h-[300px] px-10 my-2 overflow-x-auto">
-          <TimelineComponent />
+          <TimelineComponent tasks={tasks} />
         </div>
         <Modal.Footer>
           <button
-            onClick={() => setOpenModal(false)}
+            onClick={() => props.setShowQuest(false)}
             className=" text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
           >
             Purchase
           </button>
           <button
-            onClick={() => setOpenModal(false)}
+            onClick={() => props.setShowQuest(false)}
             className=" text-black border  bg-white-700 hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
           >
             Decline

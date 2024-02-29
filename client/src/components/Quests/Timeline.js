@@ -48,59 +48,7 @@ const timelineTheme = {
   },
 };
 
-const TimelineComponent = (props) => {
-  const tasks = [
-    {
-      task_uuid: "f1c347fb-1617-4738-a5e5-8244b1f79642",
-      task_name: "Experience feeding farmed fish by local fishermen",
-      task_description: "fishing activties",
-      task_points: 20,
-      task_duration: 2,
-      day_number: 1,
-    },
-    {
-      task_uuid: "386494db-9ba2-41d2-9cfd-377a4bd13d66",
-      task_name:
-        "Experience casting a net for inshore fishing by local fishermen",
-      task_description: "fishing activties",
-      task_points: 20,
-      task_duration: 3,
-      day_number: 2,
-    },
-    {
-      task_uuid: "8c315f7e-66af-4666-aa29-96ff89f8f51f",
-      task_name: "Experience helping with fish preparation and sorting",
-      task_description: "fishing activties",
-      task_points: 20,
-      task_duration: 3,
-      day_number: 3,
-    },
-    {
-      task_uuid: "0796fd91-b1de-4893-b4d2-9ca99d1065cb",
-      task_name: "Experience helping with fish preparation and sorting",
-      task_description: "fishing activties",
-      task_points: 20,
-      task_duration: 3,
-      day_number: 4,
-    },
-    {
-      task_uuid: "3f872292-8d5e-48c3-b830-601088d64a35",
-      task_name: "Experience helping with fish preparation and sorting",
-      task_description: "fishing activties",
-      task_points: 20,
-      task_duration: 3,
-      day_number: 5,
-    },
-    {
-      task_uuid: "a01a8b67-6f8b-4e59-822b-9cd98859305c",
-      task_name: "Experience helping with fish preparation and sorting",
-      task_description: "fishing activties",
-      task_points: 20,
-      task_duration: 3,
-      day_number: 6,
-    },
-  ];
-
+const TimelineComponent = ({ tasks }) => {
   tasks.sort((a, b) => a.day_number - b.day_number);
 
   // Group tasks by day number

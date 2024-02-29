@@ -1,4 +1,6 @@
 import { Card } from "flowbite-react";
+import QuestModal from "./QuestModal";
+import { useState } from "react";
 
 const SkeletonUserQuest = () => {
   return (
@@ -25,35 +27,57 @@ const SkeletonUserQuest = () => {
 };
 
 const UserQuest = (props) => {
+  const [showQuest, setShowQuest] = useState(false);
+
+  const handleClick = () => {
+    setShowQuest(true);
+  };
+
   return (
     <div className="relative mx-4">
-      <Card
-        className="max-w-[230px] max-sm:max-w-[240px] rounded-3xl"
-        renderImage={() => (
-          <img
-            src={process.env.PUBLIC_URL + "/jp-as-1.jpg"}
-            alt="image 1"
-            className="h-[180px] max-sm:h-[120px] rounded-t-3xl opacity-65 object-cover"
-          />
-        )}
-      >
-        <div className="quest-location absolute top-0 left-0 p-6">
-          <h5 className="tracking-tight  max-w-xs">{props.location}</h5>
-          <h3 className="text-2xl font-bold ">{props.quest_name}</h3>
-        </div>
-        <div className="flex flex-row">
-          <div className="basis-1/2">
-            <p className="font-bold text-3xl text-center ">{props.num_tasks}</p>
-            <p className="text-center text-gray-600">Tasks</p>
+      <button onClick={handleClick}>
+        <Card
+          className="max-w-[230px] max-sm:max-w-[240px] rounded-3xl"
+          renderImage={() => (
+            <img
+              src={process.env.PUBLIC_URL + "/jp-as-1.jpg"}
+              alt="image 1"
+              className="h-[180px] max-sm:h-[120px] rounded-t-3xl opacity-65 object-cover"
+            />
+          )}
+        >
+          <div className="quest-location absolute top-0 left-0 p-6">
+            <h5 className="tracking-tight  max-w-xs">{props.location}</h5>
+            <h3 className="text-2xl font-bold ">{props.quest_name}</h3>
           </div>
-          <div className="basis-1/2">
-            <p className="font-bold text-3xl text-center ">
-              {props.total_duration}
-            </p>
-            <p className="text-center text-gray-600">Duration</p>
+          <div className="flex flex-row">
+            <div className="basis-1/2">
+              <p className="font-bold text-3xl text-center ">
+                {props.num_tasks}
+              </p>
+              <p className="text-center text-gray-600">Tasks</p>
+            </div>
+            <div className="basis-1/2">
+              <p className="font-bold text-3xl text-center ">
+                {props.total_duration}
+              </p>
+              <p className="text-center text-gray-600">Duration</p>
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      </button>
+
+      <QuestModal
+        location={props.location}
+        quest_name={props.quest_name}
+        num_tasks={props.num_tasks}
+        total_duration={props.total_duration}
+        total_points={props.total_points}
+        description={props.description}
+        quest_uuid={props.quest_uuid}
+        showQuest={showQuest}
+        setShowQuest={setShowQuest}
+      />
     </div>
   );
 };
