@@ -87,7 +87,7 @@ const FindQuestsByText = ({ search_query }) => {
 
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_BACKEND_URL}/api/get/quest/search_results`,
+        `${process.env.REACT_APP_BACKEND_URL}/api/get/search_results`,
         queryOptions
       );
 

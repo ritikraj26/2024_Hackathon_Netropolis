@@ -44,6 +44,7 @@ const QuestPage = () => {
     FindQuestsByText({ search_query: e.target[0].value })
       .then((data) => {
         console.log("text query res : ", data);
+        data.reverse();
         setQuestsSearch(data);
       })
       .catch((err) => {
