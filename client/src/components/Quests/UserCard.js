@@ -46,6 +46,7 @@ const UserQuest = (props) => {
             <h5 className="tracking-tight  max-w-xs">{props.location}</h5>
             <h3 className="text-2xl font-bold ">{props.quest_name}</h3>
           </div>
+
           <div className="flex flex-row">
             <div className="basis-1/2">
               <p className="font-bold text-3xl text-center ">
@@ -53,19 +54,11 @@ const UserQuest = (props) => {
               </p>
               <p className="text-center text-gray-600">Tasks</p>
             </div>
-            <div className="flex flex-row">
-              <div className="basis-1/2">
-                <p className="font-bold text-3xl text-center ">
-                  {props.num_tasks}
-                </p>
-                <p className="text-center text-gray-600">Tasks</p>
-              </div>
-              <div className="basis-1/2">
-                <p className="font-bold text-3xl text-center ">
-                  {props.total_duration}
-                </p>
-                <p className="text-center text-gray-600">Duration</p>
-              </div>
+            <div className="basis-1/2">
+              <p className="font-bold text-3xl text-center ">
+                {props.total_duration}
+              </p>
+              <p className="text-center text-gray-600">Duration</p>
             </div>
           </div>
         </Card>
