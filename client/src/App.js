@@ -13,6 +13,7 @@ import QuestPage from "./pages/QuestPage/QuestPage";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { EditorPage } from "./pages/EditorPage/EditorPage";
+import CreateTask from "./components/Tasks/CreateTask";
 
 const AuthContext = createContext({
   authSession: null,
@@ -137,6 +138,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route path="/createTask" element={<CreateTask />} />
             <Route path="/error" element={<ErrorPage />} />
             <Route path="*" element={<ErrorPage />} />
           </Routes>
