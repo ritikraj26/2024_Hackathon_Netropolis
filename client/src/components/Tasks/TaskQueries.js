@@ -98,9 +98,41 @@ const FetchTasksByLocation = ({ location_id }) => {
   });
 };
 
+const CreateTask = (task) => {
+  return new Promise(async (resolve, reject) => {
+    const queryOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(task),
+    };
+
+    console.log("CreateTask : ", queryOptions.body);
+
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND_URL}/api/create/task`,
+        queryOptions
+      );
+
+      if (response.status >= 200 && response.status < 300) {
+        const data = await response.json();
+        resolve(data);
+      } else {
+        throw new Error(`HTTP Error ${response.status}`);
+      }
+    } catch (error) {
+      console.error("CreateTask : ", error);
+      reject(error);
+    }
+  });
+};
+
 export {
   FetchTasksByLocation,
   FetchTasksByQuest,
   FetchCategories,
   FetchLocationType,
+  CreateTask,
 };
