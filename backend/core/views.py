@@ -402,6 +402,16 @@ def create_task(request):
 
 
 @csrf_exempt
+def get_task_by_uuid(request, pk):
+    if request.method == "GET":
+        task = Task.objects.get(uuid=pk)
+        serialized_task = Task_Serializer(task)
+        return JsonResponse(serialized_task.data, safe=False)
+    else:
+        return HttpResponse("Get Task by UUID Page")
+
+
+@csrf_exempt
 def get_tasks(request):
     if request.method == "GET":
         tasks = Task.objects.all()
@@ -433,6 +443,8 @@ def get_task_by_location(request, pk):
     if request.method == "GET":
         location = Location.objects.get(uuid=pk)
         tasks = Task.objects.filter(location=location.uuid)
+
+        print("Tasks 1 ", tasks)
         serialized_tasks = Task_Serializer(tasks, many=True)
         return JsonResponse(serialized_tasks.data, safe=False)
 
@@ -440,31 +452,27 @@ def get_task_by_location(request, pk):
 @csrf_exempt
 def get_task_by_quest(request, pk):
     if request.method == "GET":
-        quest = Quest.objects.get(uuid=pk)
+        try:
+            quest = Quest.objects.get(uuid=pk)
+            quest_tasks = Quest_Task.objects.filter(quest=quest)
 
-        quest_tasks = Quest_Task.objects.filter(quest=quest)
+            # Create a list to store task data including day_number
+            task_data = []
 
-        for quest_task in quest_tasks:
-            print(quest_task.task, "Quest Task")
+            for quest_task in quest_tasks:
+                task = quest_task.task
+                # Serialize the task including day_number
+                serialized_task = Task_Serializer(task).data
+                serialized_task["day_number"] = quest_task.day_number
+                task_data.append(serialized_task)
 
-        serialized_tasks = []
-        for quest_task in quest_tasks:
-            task = quest_task.task
-            serialized_tasks.append(
-                {
-                    "task_uuid": task.uuid,
-                    "task_name": task.name,
-                    "task_description": task.description,
-                    "task_points": task.points,
-                    "task_duration": task.duration,
-                    "day_number": quest_task.day_number,
-                    "creator_uuid": task.creator_uuid.uuid,
-                }
-            )
+            return JsonResponse(task_data, safe=False)
 
-        return JsonResponse(serialized_tasks, safe=False)
+        except Quest.DoesNotExist:
+            return JsonResponse({"error": "Quest not found"}, status=404)
+
     else:
-        return HttpResponse("Get Task by Quest Page")
+        return JsonResponse({"error": "Method not allowed"}, status=405)
 
 
 @csrf_exempt
@@ -565,6 +573,30 @@ def create_quest(request):
         return JsonResponse(response_data, safe=False)
     else:
         return HttpResponse("Create Quest Page")
+
+
+@csrf_exempt
+def get_quests_by_questId(request, pk):
+    if request.method == "GET":
+        quest = Quest.objects.get(uuid=pk)
+
+        total_tasks = Quest_Task.objects.filter(quest=quest).count()
+
+        response_data = {
+            "quest_uuid": quest.uuid,
+            "quest_name": quest.name,
+            "quest_description": quest.description,
+            "quest_total_points": quest.total_points,
+            "quest_total_duration": quest.total_duration,
+            "quest_max_people": quest.max_people,
+            "location": quest.location.name,
+            "creator_id": quest.created_by.uuid,
+            "total_tasks": total_tasks,
+        }
+
+        return JsonResponse(response_data, safe=False)
+    else:
+        return HttpResponse("Get Quests by QuestId Page")
 
 
 @csrf_exempt
@@ -753,8 +785,10 @@ def purchased_user_quest(request):
         request_data_str = request.body.decode("utf-8")
         request_data = json.loads(request_data_str)
 
-        user_uuid = request_data.get("user_uuid")
-        quest_uuid = request_data.get("quest_uuid")
+        user_uuid = request_data.get("user_id")
+        quest_uuid = request_data.get("quest_id")
+        description = request_data.get("description")
+        num_people = request_data.get("num_people")
 
         try:
             user = Participant.objects.get(uuid=user_uuid)
@@ -782,7 +816,12 @@ def purchased_user_quest(request):
             )
 
         user_quest = User_Quest.objects.create(
-            uuid=uuid.uuid4(), user=user, quest=quest, is_completed=False
+            uuid=uuid.uuid4(),
+            user=user,
+            quest=quest,
+            is_completed=False,
+            description=description,
+            num_people=num_people,
         )
 
         response_data = {
@@ -795,8 +834,13 @@ def purchased_user_quest(request):
             "quest_total_points": quest.total_points,
             "quest_total_duration": quest.total_duration,
             "location": quest.location.name,
-            "max_people": quest.max_people,
-            "total_tasks": quest_tasks.count(),
+            "quest_max_people": quest.max_people,
+            "creator_id": quest.created_by.uuid,
+            "num_people": user_quest.num_people,
+            "description": user_quest.description,
+            "total_tasks": len(
+                quest_tasks
+            ),  # Use len() to get the total number of tasks
             "is_completed": "False",
         }
         return JsonResponse(response_data, safe=False)
@@ -831,6 +875,8 @@ def get_user_quest_by_user(request, pk):
                     "total_tasks": quest_tasks,
                     "creator_id": quest.created_by.uuid,
                     "is_completed": user_quest.is_completed,
+                    "userquest_description": user_quest.description,
+                    "num_people": user_quest.num_people,
                 }
             )
 

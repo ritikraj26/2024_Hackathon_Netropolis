@@ -133,6 +133,7 @@ class User_Quest(models.Model):
     uuid = models.UUIDField(primary_key=True, editable=False)
     is_completed = models.BooleanField(default=False)
     description = models.TextField(default="")
+    num_people = models.PositiveIntegerField(default=1)
     user = models.ForeignKey(Participant, on_delete=models.CASCADE)
     quest = models.ForeignKey(Quest, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
