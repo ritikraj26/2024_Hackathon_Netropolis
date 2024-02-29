@@ -7,6 +7,7 @@
 * [Installation](#installation)
 * [Usage](#usage)
 * [Features](#features)
+* [Schema](#schema)
 * [Technologies Used](#technologies-used)
 * [Team Members](#team-members)
 
@@ -56,6 +57,11 @@ Develop core platform functions to foster revitalization and user engagement thr
 * User-friendly quest scheduling 
 * LLM-enhanced quest search
 * Streamlined quest request system
+
+## Schema
+
+![Database Schema](./client/public/schema.png)
+
 
 ## Technologies Used
 
