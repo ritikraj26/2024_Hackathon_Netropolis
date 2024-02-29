@@ -5,6 +5,7 @@ import { FetchLocations } from "../Quests/QuestQueries";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { AuthContext } from "../../App";
+import { ManagerSignup } from "../LoginSignup/ManagerQueries";
 
 const SignupDetailsForm = (props) => {
   const navigate = useNavigate();
@@ -31,7 +32,7 @@ const SignupDetailsForm = (props) => {
 
     props.setDetails(details);
 
-    if(props.role === "user") {
+    if (props.role === "user") {
       UserSignup(details)
         .then((data) => {
           console.log("Sgnup data: ", data);
@@ -168,37 +169,41 @@ const SignupDetailsForm = (props) => {
             </select>
           </div>
         </div>
-        <div className="mb-5">
-          <label
-            htmlFor="message"
-            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-          >
-            Hobbies
-          </label>
-          <textarea
-            id="message"
-            rows="4"
-            className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-            placeholder="I like to..."
-            defaultValue={props?.details?.hobbies}
-            required
-          ></textarea>
-        </div>
-        <div className="mb-5">
-          <label
-            htmlFor="base-input"
-            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-          >
-            Job
-          </label>
-          <input
-            type="text"
-            id="base-input"
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-            defaultValue={props?.details?.job}
-            required
-          />
-        </div>
+        {props.role === "user" && (
+          <>
+            <div className="mb-5">
+              <label
+                htmlFor="message"
+                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              >
+                Hobbies
+              </label>
+              <textarea
+                id="message"
+                rows="4"
+                className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                placeholder="I like to..."
+                defaultValue={props?.details?.hobbies}
+                required
+              ></textarea>
+            </div>
+            <div className="mb-5">
+              <label
+                htmlFor="base-input"
+                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              >
+                Job
+              </label>
+              <input
+                type="text"
+                id="base-input"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                defaultValue={props?.details?.job}
+                required
+              />
+            </div>
+          </>
+        )}
         {props.role === "manager" && (
           <div className="mb-5">
             <label

@@ -9,23 +9,21 @@ const commonStyle =
 const desktopStyle = "";
 const mobileStyle = "max-sm:max-w-sm";
 
-const LoginPage = () => {
+const LoginPage = ({ role }) => {
   const navigate = useNavigate();
   const [currPage, setCurrPage] = useState(0);
   const { authSession } = useContext(AuthContext);
 
+  const loginRole = role || "user";
+
   useEffect(() => {
     console.log("authSession", authSession);
     if (authSession !== null && authSession !== undefined) {
-      if (authSession.role === "manager") {
-        navigate("/manager-dashboard");
-      } else {
-        navigate("/dashboard");
-      }
+      navigate("/dashboard");
     }
   }, [authSession, navigate]);
 
-  const forms = [<SigninForm role={authSession.role}/>];
+  const forms = [<SigninForm role={loginRole} />];
 
   const handleBackClick = (e) => {
     e.preventDefault();
@@ -57,7 +55,7 @@ const LoginPage = () => {
           <div className="inline-flex items-center justify-center w-full">
             <hr className="w-64 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
             <span className="absolute px-3 text-xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">
-              Login
+              {loginRole[0].toUpperCase() + loginRole.slice(1) + " Login"}
             </span>
           </div>
         </div>

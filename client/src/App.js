@@ -94,8 +94,16 @@ function App() {
         >
           <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/login" element={<LoginPage role={"user"} />} />
+            <Route path="/signup" element={<SignupPage role={"user"} />} />
+            <Route
+              path="/manager/signup"
+              element={<SignupPage role={"manager"} />}
+            />
+            <Route
+              path="/manager/login"
+              element={<LoginPage role={"manager"} />}
+            />
             <Route
               path="/dashboard"
               element={
