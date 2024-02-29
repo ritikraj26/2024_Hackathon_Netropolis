@@ -104,7 +104,7 @@ WSGI_APPLICATION = "backend.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "netropolis_db",
+        "NAME": "netropolis_prod",
         "USER": "postgres",
         "PASSWORD": "postgres",
         "HOST": "localhost",

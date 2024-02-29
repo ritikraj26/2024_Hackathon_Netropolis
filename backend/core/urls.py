@@ -113,7 +113,7 @@ urlpatterns = [
         name="create_all_quest_embeddings",
     ),
     path(
-        "get/quest/search_results",
+        "get/search_results",
         core.views.quest_search_results,
         name="quest_search_results",
     ),
