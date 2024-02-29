@@ -49,6 +49,7 @@ const timelineTheme = {
 };
 
 const TimelineComponent = ({ tasks }) => {
+  console.log("Timeline tasks : ", tasks);
   tasks.sort((a, b) => a.day_number - b.day_number);
 
   // Group tasks by day number
@@ -60,6 +61,8 @@ const TimelineComponent = ({ tasks }) => {
     acc[dayNumber].push(task);
     return acc;
   }, {});
+
+  console.log("Grouped tasks : ", groupedTasks);
 
   // Convert grouped tasks object into an array
   const combinedTasks = Object.entries(groupedTasks).map(
@@ -83,7 +86,7 @@ const TimelineComponent = ({ tasks }) => {
                 <Timeline.Time>Day {day.dayNumber}</Timeline.Time>
                 {day.tasks.map((task, taskIndex) => (
                   <React.Fragment key={taskIndex}>
-                    <Timeline.Title>{task.task_name}</Timeline.Title>
+                    <Timeline.Title>{task.name}</Timeline.Title>
                     {/* Include task description or other task details here if needed */}
                   </React.Fragment>
                 ))}

@@ -7,7 +7,8 @@ const HeroSection = () => {
             Netropolis
           </h1>
           <p className="text-center pointer-events-none max-w-2xl mb-6 font-light text-gray-500 lg:mb-8 md:text-lg lg:text-xl dark:text-gray-400">
-          Join us in shaping a digital world where collaboration and innovation flourish
+            Join us in shaping a digital world where collaboration and
+            innovation flourish
           </p>
           <div className="flex justify-center">
             <a

@@ -9,11 +9,11 @@ const DashboardPage = () => {
 
   if (authSession !== null && authSession !== undefined) {
     if (authSession.role === "user") {
-      return <UserDashboard />;
+      return <UserDashboard role={"user"}/>;
     }
 
     if (authSession.role === "manager") {
-      return <CMDashboard />;
+      return <UserDashboard role={"manager"} />;
     }
   }
 

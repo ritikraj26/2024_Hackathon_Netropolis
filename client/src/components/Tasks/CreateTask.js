@@ -74,7 +74,7 @@ function CreateTaskModal(props) {
   const [submitting, setSubmitting] = useState(false);
 
   function onCloseModal() {
-    props.setCreateTaskModal(false);
+    props.setCreateTask(false);
   }
 
   useEffect(() => {
@@ -128,20 +128,22 @@ function CreateTaskModal(props) {
     setSubmitting(true);
 
     if (authSession === null || authSession === undefined) {
-      toast.error("Please login to create a task");
+      toast.error("Please login to create a task", {
+        toastId: "not-authenticated",
+      });
       setSubmitting(false);
       navigate("/login");
     }
 
     const reqData = {
       creator_id: authSession.uuid,
-      name: e.target[1].value,
-      description: e.target[2].value,
-      points: parseInt(e.target[3].value),
-      duration: parseInt(e.target[4].value),
-      location_id: e.target[5].value,
-      location_type_id: e.target[6].value,
-      category_id: e.target[7].value,
+      name: e.target[0].value,
+      description: e.target[1].value,
+      points: parseInt(e.target[2].value),
+      duration: parseInt(e.target[3].value),
+      location_id: e.target[4].value,
+      location_type_id: e.target[5].value,
+      category_id: e.target[6].value,
     };
     console.log("submitting data : ", reqData);
 
@@ -149,11 +151,12 @@ function CreateTaskModal(props) {
       .then((data) => {
         console.log("CreateTask : ", data);
         toast.success("Task created successfully");
-        props.setCreateTaskModal(false);
+        props.setCreateTask(false);
         setSubmitting(false);
+        navigate(0);
       })
       .catch((err) => {
-        toast.error("Error creating task");
+        toast.error("Error creating task", { toastId: "create-task-failed" });
         console.error("CreateTask : ", err);
         setSubmitting(false);
       });
@@ -162,21 +165,14 @@ function CreateTaskModal(props) {
   return (
     <>
       <Modal
-        show={props.createTaskModal}
+        show={props.craeteTask}
         size="xl"
         onClose={onCloseModal}
         theme={createTaskTheme}
         popup
       >
         <div className="relative">
-          <div
-            className="absolute inset-0 bg-cover bg-center opacity-60"
-            style={{
-              backgroundImage: `url(${
-                process.env.PUBLIC_URL + "/japan-full.png"
-              })`,
-            }}
-          />
+          <div className="absolute inset-0 bg-cover bg-center opacity-60 bg-gradient-to-r from-green-200 to-pink-200" />
           <Modal.Header className="relative z-10 bg-transparent m-5">
             Create a New Task
           </Modal.Header>

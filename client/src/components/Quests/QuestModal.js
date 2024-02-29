@@ -1,9 +1,11 @@
 import { Button, Modal, Badge } from "flowbite-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import TimelineComponent from "./Timeline";
 import { FetchTasksByQuest } from "../Tasks/TaskQueries";
 import { toast } from "react-toastify";
 import { QuestPurchasedByUser } from "./QuestQueries";
+import { AuthContext } from "../../App";
+import { useNavigate } from "react-router-dom";
 
 const modalTheme = {
   root: {
@@ -62,31 +64,56 @@ const modalTheme = {
 };
 
 const QuestModal = (props) => {
+  const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
   const [owned, setOwned] = useState(false);
+  const { authSession } = useContext(AuthContext);
 
   useEffect(() => {
-    console.log("Props : ", props);
+    if (authSession === null || authSession === undefined) {
+      toast.error("Error fetching user", { toastId: "fetch-user" });
+      navigate("/error");
+    }
+
     FetchTasksByQuest({ quest_id: props.quest_uuid })
       .then((data) => {
         setTasks(data);
       })
       .catch((error) => {
-        toast.error("Error fetching tasks");
+        toast.error("Error fetching tasks", { toastId: "fetch-tasks" });
         console.error("FetchTasksByQuest : ", error);
       });
 
     // check if user owns the quest (purchased or created)
-    if (props.quest_uuid === props.creator_uuid) {
-      QuestPurchasedByUser()
-        .then((data) => {
-          if (data) setOwned(true);
-        })
-        .catch((error) => {
-          console.error("QuestPurchasedByUser : ", error);
-        });
+    console.log("creator_uuid : ", props.creator_uuid);
+    if (authSession.uuid === props.creator_uuid) {
+      console.log("creator same");
+      setOwned(true);
     }
-  }, [props.quest_uuid, props]);
+
+    QuestPurchasedByUser({
+      quest_id: props.quest_uuid,
+      user_id: authSession.uuid,
+    })
+      .then((data) => {
+        console.log("Purchased or not : ", data);
+        if (data) setOwned(true);
+      })
+      .catch((error) => {
+        console.error("QuestPurchasedByUser : ", error);
+      });
+  }, [props.quest_uuid, props, authSession, navigate]);
+
+  const handleEditQuest = (e) => {
+    e.preventDefault();
+    navigate(`/editor/${props.quest_uuid}`);
+  };
+
+  const handlePurchaseQuest = (e) => {
+    e.preventDefault();
+    props.setShowPurchase(true);
+    props.setShowQuest(false);
+  };
 
   return (
     <>
@@ -96,18 +123,17 @@ const QuestModal = (props) => {
         onClose={() => props.setShowQuest(false)}
       >
         <div className="relative">
-          <div
-            className="absolute inset-0 bg-cover bg-center opacity-60"
-            style={{
-              backgroundImage: `url(${
-                process.env.PUBLIC_URL + "/japan-full.png"
-              })`,
-            }}
-          />
+          <div className="absolute rounded-t-lg inset-0 bg-cover bg-center opacity-60 bg-gradient-to-r from-green-200 to-pink-200" />
           <Modal.Header className="relative z-10 bg-transparent">
-            {props.quest_name}
-            <Badge className="mx-4">{props.location} Location</Badge>
-            <Badge className="mx-4 ">{props.total_points} Points</Badge>
+            <div className="max-sm:flex-col max-sm:flex flex-row flex">
+              {props.quest_name}
+              <Badge className="ml-2 max-sm:my-1 max-sm:mx-0">
+                {props.location} Location
+              </Badge>
+              <Badge className="ml-2 max-sm:my-1 max-sm:mx-0">
+                {props.total_points} Points
+              </Badge>
+            </div>
           </Modal.Header>
         </div>
         <Modal.Body>
@@ -120,22 +146,32 @@ const QuestModal = (props) => {
         <div className="max-h-[400px] max-sm:max-h-[300px] px-10 my-2 overflow-x-auto">
           <TimelineComponent tasks={tasks} />
         </div>
-        {!owned && (
-          <Modal.Footer>
-            <button
-              onClick={() => props.setShowQuest(false)}
-              className=" text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+
+        <Modal.Footer className="max-sm:flex-col max-sm:flex max-sm:space-y-2">
+          <div className="flex flex-row">
+            <Button
+              onClick={handlePurchaseQuest}
+              disabled={owned}
+              color="primary"
+              className="mr-2 text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 rounded-lg text-sm text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
             >
               Purchase
-            </button>
-            <button
-              onClick={() => props.setShowQuest(false)}
-              className=" text-black border  bg-white-700 hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+            </Button>
+            <Button
+              onClick={handleEditQuest}
+              disabled={owned}
+              color="primary"
+              className=" text-black border border-gray-600  bg-white-700 hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
             >
-              Decline
-            </button>
-          </Modal.Footer>
-        )}
+              Edit Quest
+            </Button>
+          </div>
+          {owned && (
+            <span className="text-sm text-primary-700 bg-primary-100 rounded-xl p-2">
+              You already own this quest
+            </span>
+          )}
+        </Modal.Footer>
       </Modal>
     </>
   );

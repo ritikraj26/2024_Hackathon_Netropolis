@@ -43,7 +43,7 @@ const SignupDetailsForm = (props) => {
         })
         .catch((err) => {
           console.error("Signup error : ", err);
-          toast.error("Signup failed");
+          toast.error("Signup failed", { toastId: "signup-failed" });
           setSubmitting(false);
         });
     } else {
@@ -57,7 +57,7 @@ const SignupDetailsForm = (props) => {
         })
         .catch((err) => {
           console.error("Signup error : ", err);
-          toast.error("Signup failed");
+          toast.error("Signup failed", { toastId: "signup-failed" });
           setSubmitting(false);
         });
     }

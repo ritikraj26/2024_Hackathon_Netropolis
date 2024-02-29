@@ -1,6 +1,7 @@
 import { Card } from "flowbite-react";
 import QuestModal from "./QuestModal";
 import { useState } from "react";
+import PurchaseModal from "./PurchaseModal";
 
 const SkeletonUserQuest = () => {
   return (
@@ -28,6 +29,7 @@ const SkeletonUserQuest = () => {
 
 const UserQuest = (props) => {
   const [showQuest, setShowQuest] = useState(false);
+  const [showPurchase, setShowPurchase] = useState(false);
 
   const handleClick = () => {
     setShowQuest(true);
@@ -39,7 +41,7 @@ const UserQuest = (props) => {
         <Card
           className="w-[230px] max-sm:w-[240px] rounded-3xl"
           renderImage={() => (
-            <div className="bg-gradient-to-r from-purple-200 to-pink-200 h-[180px] max-sm:h-[120px] rounded-t-3xl opacity-65 object-cover"></div>
+            <div className="bg-gradient-to-r from-green-200 to-pink-200 h-[180px] max-sm:h-[120px] rounded-t-3xl opacity-65 object-cover"></div>
           )}
         >
           <div className="quest-location absolute top-0 left-0 p-6">
@@ -68,18 +70,29 @@ const UserQuest = (props) => {
         </Card>
       </button>
 
-      <QuestModal
-        location={props.location}
-        quest_name={props.quest_name}
-        num_tasks={props.num_tasks}
-        total_duration={props.total_duration}
-        total_points={props.total_points}
-        description={props.description}
-        quest_uuid={props.quest_uuid}
-        creator_uuid={props.creator_uuid}
-        showQuest={showQuest}
-        setShowQuest={setShowQuest}
-      />
+      {showQuest && (
+        <QuestModal
+          location={props.location}
+          quest_name={props.quest_name}
+          num_tasks={props.num_tasks}
+          total_duration={props.total_duration}
+          total_points={props.total_points}
+          description={props.description}
+          quest_uuid={props.quest_uuid}
+          creator_uuid={props.creator_uuid}
+          showQuest={showQuest}
+          setShowQuest={setShowQuest}
+          setShowPurchase={setShowPurchase}
+        />
+      )}
+
+      {showPurchase && (
+        <PurchaseModal
+          quest={props}
+          showPurchase={showPurchase}
+          setShowPurchase={setShowPurchase}
+        />
+      )}
     </div>
   );
 };

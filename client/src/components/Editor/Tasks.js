@@ -8,7 +8,7 @@ import TaskCard from "./TaskCard";
 import { EditorPageContext } from "../../pages/EditorPage/EditorPage";
 
 const TaskSection = () => {
-  const { taskList, setTaskList } = useContext(EditorPageContext);
+  const { taskList, setTaskList, quest_id } = useContext(EditorPageContext);
   const [locations, setLocations] = useState(null);
   const { authSession } = useContext(AuthContext);
   const [submitting, setSubmitting] = useState(false);
@@ -21,7 +21,9 @@ const TaskSection = () => {
       })
       .catch((err) => {
         console.error(err);
-        toast.error("Failed to fetch locations");
+        toast.error("Failed to fetch locations", {
+          toastId: "fetch-locations",
+        });
       });
   }, []);
 
@@ -30,7 +32,7 @@ const TaskSection = () => {
     setSubmitting(true);
 
     if (authSession === null || authSession === undefined) {
-      toast.error("Not authenticated");
+      toast.error("Not authenticated", { toastId: "not-authenticated" });
       setSubmitting(false);
       return;
     }
@@ -49,25 +51,41 @@ const TaskSection = () => {
       })
       .catch((err) => {
         console.error(err);
-        toast.error("Failed to fetch tasks");
+        toast.error("Failed to fetch tasks", {
+          toastId: "fetch-tasks",
+        });
         setSubmitting(false);
       });
   };
 
   return (
-    <div className="max-sm:max-h-[400px] bg-gradient-to-r from-purple-200 to-pink-200 mx-2 max-h-full border rounded-xl flex flex-col p-4 max-w-screen overflow-y-auto max-sm:p-2">
+    <div className="max-sm:max-h-[400px] bg-gradient-to-r from-green-200 to-pink-200 mx-2 max-h-full border rounded-xl flex flex-col p-4 max-w-screen overflow-y-auto max-sm:p-2">
       <div className="task-section-header text-xl mb-4">Task List</div>
       <form className="mx-auto w-full" onSubmit={handleSubmit}>
         <div className="task-location-select flex flex-row mb-4">
           <div className="mx-4">
             <select
-              id="gender"
+              id="locations"
               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
               required
             >
+              <option
+                value=""
+                selected={quest_id === null || quest_id === undefined}
+                disabled
+                hidden
+              >
+                Choose location
+              </option>
               {locations &&
                 locations.map((location, index) => (
-                  <option key={index} value={location.uuid}>
+                  <option
+                    key={index}
+                    value={location.uuid}
+                    selected={
+                      quest_id && location.uuid === taskList[0]?.location?.uuid
+                    }
+                  >
                     {location.name}
                   </option>
                 ))}

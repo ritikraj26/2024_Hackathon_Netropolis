@@ -12,6 +12,8 @@ const SigninForm = (props) => {
   const [error, setError] = useState("");
   const { authSession, setAuthSession } = useContext(AuthContext);
 
+  const cm_page = window.location.pathname.includes("/manager");
+
   const errStyle =
     "bg-red-50 border border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:text-red-500 dark:placeholder-red-500 dark:border-red-500";
 
@@ -20,7 +22,7 @@ const SigninForm = (props) => {
     setSubmitting(true);
 
     // check auth
-    if(props.role === "user") {
+    if (props.role === "user") {
       UserLogin({ email: e.target[0].value, password: e.target[1].value })
         .then((data) => {
           console.log("login data : ", data);
@@ -31,12 +33,11 @@ const SigninForm = (props) => {
           navigate("/dashboard");
         })
         .catch((err) => {
-          toast.error("Login failed");
+          toast.error("Login failed", { toastId: "login-failed" });
           console.error("Login error : ", err);
           setSubmitting(false);
         });
-    }
-    else {
+    } else {
       ManagerLogin({ email: e.target[0].value, password: e.target[1].value })
         .then((data) => {
           console.log("login data : ", data);
@@ -47,11 +48,16 @@ const SigninForm = (props) => {
           navigate("/dashboard");
         })
         .catch((err) => {
-          toast.error("Login failed");
+          toast.error("Login failed", { toastId: "login-failed" });
           console.error("Login error : ", err);
           setSubmitting(false);
         });
     }
+  };
+
+  const handleCMSignIn = (e) => {
+    e.preventDefault();
+    navigate("/manager/login");
   };
 
   return (
@@ -114,6 +120,14 @@ const SigninForm = (props) => {
             "Login"
           )}
         </button>
+        {!cm_page && (
+          <button
+            onClick={handleCMSignIn}
+            className="ml-4 bg-white border border-gray-300 hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+          >
+            Community Manager Login
+          </button>
+        )}
       </form>
     </div>
   );

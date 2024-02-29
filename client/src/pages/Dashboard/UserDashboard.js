@@ -8,13 +8,16 @@ import {
 import { AuthContext } from "../../App";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import UserCreatedTaskSection from "../../components/Tasks/UserCreatedTask";
 
-const UserDashboard = () => {
+const UserDashboard = (props) => {
   const navigate = useNavigate();
   const [userQuests, setUserQuests] = useState(null);
   const [createdQuests, setCreatedQuests] = useState(null);
   const [featuredQuests, setFeaturedQuests] = useState(null);
   const { authSession } = useContext(AuthContext);
+
+  const is_manager = props.role === "manager";
 
   useEffect(() => {
     // fetch user's quests and location based
@@ -23,27 +26,33 @@ const UserDashboard = () => {
       navigate("/error");
     }
 
-    FetchQuestsByUserId({ user_id: authSession.uuid })
-      .then((data) => {
-        console.log("FetchQuestsByUserId data : ", data);
-        setUserQuests(data);
-      })
-      .catch((err) => {
-        console.error("Dashboard FetchQuestsByUserId : ", err);
-        toast.error("Error in connecting to serverr");
-        setUserQuests([]);
-      });
+    !is_manager &&
+      FetchQuestsByUserId({ user_id: authSession.uuid })
+        .then((data) => {
+          console.log("FetchQuestsByUserId data : ", data);
+          setUserQuests(data);
+        })
+        .catch((err) => {
+          console.error("Dashboard FetchQuestsByUserId : ", err);
+          toast.error("Error in connecting to server", {
+            toastId: "fetch-quests",
+          });
+          setUserQuests([]);
+        });
 
-    FetchQuestsByLocation({ location_id: authSession.location })
-      .then((data) => {
-        console.log("FetchQuestsByLocation data : ", data);
-        setFeaturedQuests(data);
-      })
-      .catch((err) => {
-        console.error("Dashboard FetchQuestsByLocation : ", err);
-        toast.error("Error in connecting to serverr");
-        setFeaturedQuests([]);
-      });
+    !is_manager &&
+      FetchQuestsByLocation({ location_id: authSession.location })
+        .then((data) => {
+          console.log("FetchQuestsByLocation data : ", data);
+          setFeaturedQuests(data);
+        })
+        .catch((err) => {
+          console.error("Dashboard FetchQuestsByLocation : ", err);
+          toast.error("Error in connecting to server", {
+            toastId: "fetch-quests",
+          });
+          setFeaturedQuests([]);
+        });
 
     FetchQuestsByCreatorId({ creator_id: authSession.uuid })
       .then((data) => {
@@ -52,14 +61,16 @@ const UserDashboard = () => {
       })
       .catch((err) => {
         console.error("Dashboard FetchQuestsByCreatorId : ", err);
-        toast.error("Error in connecting to serverr");
+        toast.error("Error in connecting to server", {
+          toastId: "fetch-quests",
+        });
         setCreatedQuests([]);
       });
-  }, [authSession, navigate]);
+  }, [authSession, navigate, is_manager]);
 
   return (
     <div className="relative">
-      <div className="w-full h-full flex flex-row justify-center">
+      <div className="w-full h-full flex flex-row justify-center max-sm:flex-col">
         {/* <div className="absolute top-0 left-0 -z-50 ">
           <img
             src={process.env.PUBLIC_URL + "/jp-as-3.jpg"}
@@ -72,11 +83,22 @@ const UserDashboard = () => {
             title="Your Created Quests"
             testVariable={createdQuests}
           />
-          <QuestSection
-            title="Your Purchased Quests"
-            testVariable={userQuests}
-          />
-          <QuestSection title="Featured Quests" testVariable={featuredQuests} />
+          {!is_manager && (
+            <QuestSection
+              title="Your Purchased Quests"
+              testVariable={userQuests}
+            />
+          )}
+
+          {!is_manager && (
+            <QuestSection
+              title="Featured Quests"
+              testVariable={featuredQuests}
+            />
+          )}
+        </div>
+        <div className="p-4 w-full max-w-md max-sm:max-h-[400px] max-h-[640px] max-sm:order-last max-sm:relative max-sm:left-1/2 max-sm:-translate-x-1/2 rounded-xl">
+          <UserCreatedTaskSection />
         </div>
       </div>
     </div>

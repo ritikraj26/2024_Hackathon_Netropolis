@@ -1,17 +1,21 @@
 import { AuthContext } from "../../App";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { ErrorPage } from "../ErrorPage/ErrorPage";
 import QuestEditSection from "../../components/Editor/Quest";
 import TaskSection from "../../components/Editor/Tasks";
+import { useParams } from "react-router-dom";
 
 const EditorPageContext = createContext({
   taskList: [],
   setTaskList: () => {},
+  quest_id: "",
 });
 
 const EditorPage = () => {
   const { authSession } = useContext(AuthContext);
   const [taskList, setTaskList] = useState([]);
+
+  const { quest_id } = useParams();
 
   if (
     authSession === null ||
@@ -21,11 +25,18 @@ const EditorPage = () => {
     return <ErrorPage />;
   }
 
+  if (quest_id === null || quest_id === undefined) {
+    if (authSession.role !== "manager") {
+      return <ErrorPage />;
+    }
+  }
+
   return (
     <EditorPageContext.Provider
       value={{
         taskList: taskList,
         setTaskList: setTaskList,
+        quest_id: quest_id,
       }}
     >
       <div className="relative">

@@ -85,7 +85,7 @@ function App() {
 
   return (
     <>
-      <ToastContainer />
+      <ToastContainer pauseOnFocusLoss={false} autoClose={1000} stacked />
       {/* TODO: Add AuthContext.Provider value */}
       <AuthContext.Provider
         value={{
@@ -131,7 +131,7 @@ function App() {
               }
             />
             <Route
-              path="/editor"
+              path="/editor/:quest_id?"
               element={
                 <ProtectedRoute>
                   <EditorPage />

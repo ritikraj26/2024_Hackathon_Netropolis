@@ -1,33 +1,91 @@
-import { useContext, useState } from "react";
-import { Spinner } from "flowbite-react";
+import { useContext, useEffect, useState } from "react";
+import { Spinner, Button } from "flowbite-react";
 import { EditorPageContext } from "../../pages/EditorPage/EditorPage";
 import TaskCard from "./TaskCard";
 import { AuthContext } from "../../App";
 import { toast } from "react-toastify";
-import { PublishQuest } from "../Quests/QuestQueries";
+import { FetchQuestsByLocation, PublishQuest } from "../Quests/QuestQueries";
 import { useNavigate } from "react-router-dom";
+import { FetchTasksByLocation, FetchTasksByQuest } from "../Tasks/TaskQueries";
+import { FetchQuestByQuestId } from "../Quests/QuestQueries";
 
 const QuestEditSection = () => {
   const navigate = useNavigate();
   const { authSession } = useContext(AuthContext);
-  const { taskList, setTaskList } = useContext(EditorPageContext);
+  const { taskList, setTaskList, quest_id } = useContext(EditorPageContext);
   const [submitting, setSubmitting] = useState(false);
+  const [questData, setQuestData] = useState(null);
 
-  console.log("Selected Task List : ", taskList);
+  console.log("Selected   List : ", taskList);
+
+  useEffect(() => {
+    if (quest_id !== null && quest_id !== undefined) {
+      // Fetch quest details
+      FetchQuestByQuestId({ quest_id: quest_id })
+        .then((data) => {
+          console.log("Fetched quest : ", data);
+          setQuestData({
+            quest_name: data.quest_name,
+            quest_description: data.quest_description,
+            quest_max_people: data.quest_max_people,
+          });
+        })
+        .catch((err) => {
+          console.error("Error fetching quest : ", err);
+          toast.error("Error fetching quest", {
+            toastId: "fetch-quest",
+          });
+          navigate("/dashboard");
+        });
+
+      FetchTasksByQuest({ quest_id: quest_id })
+        .then((data) => {
+          const newData = data;
+          // fetch quest by location same as these
+          FetchTasksByLocation({ location_id: data[0].location.uuid })
+            .then((data) => {
+              console.log("Fetched tasks by location : ", data);
+              // set the elements not present here as selected: false
+              const newTaskList = data.map((task) => {
+                console.log("Task : ", task);
+                const found = newData.find((el) => el.uuid === task.uuid);
+                if (found === undefined) {
+                  return { ...task, selected: false };
+                }
+                return { ...task, selected: true };
+              });
+              console.log("New task list : ", newTaskList);
+              setTaskList(newTaskList);
+            })
+            .catch((err) => {
+              console.error("Error fetching tasks by location : ", err);
+              toast.error("Error fetching tasks by location", {
+                toastId: "fetch-tasks-by-location",
+              });
+              navigate("/dashboard");
+            });
+        })
+        .catch((err) => {
+          console.error("Error fetching tasks : ", err);
+          toast.error("Error fetching tasks", {
+            toastId: "fetch-tasks",
+          });
+          navigate("/dashboard");
+        });
+    }
+  }, [quest_id, navigate, setTaskList]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setSubmitting(true);
 
     if (authSession === null || authSession === undefined) {
-      toast.error("Not authenticated");
+      toast.error("Not authenticated", { toastId: "not-authenticated" });
       setSubmitting(false);
       return;
     }
 
     let day = 1;
-
-    console.log("submit task list : ", taskList);
 
     const reqData = {
       name: e.target[0].value,
@@ -58,7 +116,10 @@ const QuestEditSection = () => {
       })
       .catch((error) => {
         console.error("Error publishing quest : ", error);
-        toast.error("Error publishing quest");
+        toast.error("Error publishing quest", {
+          toastId: "error-publishing-quest",
+        });
+        setSubmitting(false);
       });
   };
 
@@ -72,6 +133,7 @@ const QuestEditSection = () => {
           type="text"
           id="questName"
           name="questName"
+          defaultValue={questData?.quest_name}
           required
           className="w-full p-2 border-2 border-gray-200 rounded-md"
         />
@@ -81,6 +143,7 @@ const QuestEditSection = () => {
         <textarea
           id="questDesc"
           name="questDesc"
+          defaultValue={questData?.quest_description}
           required
           className="w-full p-2 border-2 border-gray-200 rounded-md"
         />
@@ -91,7 +154,8 @@ const QuestEditSection = () => {
           <input
             type="number"
             id="base-input"
-            className="max-w-xs w-full p-2 border-2 border-gray-200 rounded-md"
+            className="ml-2 max-w-[100px] w-full p-2 border-2 border-gray-200 rounded-md"
+            defaultValue={questData?.quest_max_people}
             max={80}
             min={1}
             required
@@ -126,26 +190,38 @@ const QuestEditSection = () => {
             );
           })
         ) : (
-          <div className="task-item-empty mb-4">No tasks found</div>
+          <div className="text-red-600 task-item-empty m-4">
+            No tasks selected
+          </div>
         )}
-        <div className="flex flex-col"></div>
-        <button
-          type="submit"
-          className=" text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-        >
-          {submitting ? (
-            <>
-              <Spinner
-                aria-label="Spinner button example"
-                size="sm"
-                className="fill-primary-700 text-grey-0"
-              />
-              <span className="pl-3">Publishing...</span>
-            </>
-          ) : (
-            "Publish Quest"
-          )}
-        </button>
+        <div className="flex flex-row">
+          <button
+            type="submit"
+            className=" text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+          >
+            {submitting ? (
+              <>
+                <Spinner
+                  aria-label="Spinner button example"
+                  size="sm"
+                  className="fill-primary-700 text-grey-0"
+                />
+                <span className="pl-3">Publishing...</span>
+              </>
+            ) : (
+              "Publish Quest"
+            )}
+          </button>
+          <Button
+            onClick={() => {
+              navigate("/dashboard");
+            }}
+            color="primary"
+            className="ml-4 text-black border border-gray-600  bg-white-700 hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+          >
+            Cancel
+          </Button>
+        </div>
       </form>
     </div>
   );

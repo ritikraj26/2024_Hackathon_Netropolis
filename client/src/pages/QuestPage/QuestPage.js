@@ -20,6 +20,7 @@ const QuestPage = () => {
             .then((data) => {
               console.log(`query by loc-id ${d.uuid}: `, data);
               locs = [...locs, { uuid: d.uuid, name: d.name, quests: data }];
+
               setLocations(locs);
             })
             .catch((err) => {

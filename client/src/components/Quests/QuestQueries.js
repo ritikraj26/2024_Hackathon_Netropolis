@@ -141,7 +141,7 @@ const PublishQuest = ({ questData }) => {
 
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_BACKEND_URL}/api/create/single_quest_embeddings`,
+        `${process.env.REACT_APP_BACKEND_URL}/api/create/quest`,
         queryOptions
       );
 
@@ -173,7 +173,7 @@ const QuestPurchasedByUser = ({ quest_id, user_id }) => {
 
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_BACKEND_URL}/api/`,
+        `${process.env.REACT_APP_BACKEND_URL}/api/compare/quest/createdBy`,
         queryOptions
       );
 
@@ -182,7 +182,8 @@ const QuestPurchasedByUser = ({ quest_id, user_id }) => {
         if (data === null || data === undefined) {
           reject("No data found");
         } else {
-          resolve(data.purchased === "true" ? true : false);
+          console.log("Purchase response :", data);
+          resolve(data.purchased === "True" ? true : false);
         }
       } else {
         throw new Error(`HTTP Error ${response.status}`);
@@ -194,12 +195,75 @@ const QuestPurchasedByUser = ({ quest_id, user_id }) => {
   });
 };
 
+const FetchQuestByQuestId = ({ quest_id }) => {
+  return new Promise(async (resolve, reject) => {
+    const queryOptions = {
+      method: "GET",
+    };
+
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND_URL}/api/get/quest/${quest_id}`,
+        queryOptions
+      );
+
+      if (response.status >= 200 && response.status < 300) {
+        const data = await response.json();
+        resolve(data);
+      } else {
+        throw new Error(`HTTP Error ${response.status}`);
+      }
+    } catch (error) {
+      console.error("FetchQuestByQuestId : ", error);
+      reject(error);
+    }
+  });
+};
+
+const PurchaseQuest = ({ quest_id, user_id, num_people, description }) => {
+  return new Promise(async (resolve, reject) => {
+    const queryOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        quest_id: quest_id,
+        user_id: user_id,
+        num_people: num_people,
+        description: description,
+      }),
+    };
+
+    console.log("body: ", queryOptions.body);
+
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND_URL}/api/purchased/user_quest`,
+        queryOptions
+      );
+
+      if (response.status >= 200 && response.status < 300) {
+        const data = await response.json();
+        resolve(data);
+      } else {
+        throw new Error(`HTTP Error ${response.status}`);
+      }
+    } catch (error) {
+      console.error("PurchaseQuest : ", error);
+      reject(error);
+    }
+  });
+};
+
 export {
   FetchLocations,
   FetchQuestsByLocation,
   FetchQuestsByUserId,
+  FetchQuestByQuestId,
   FindQuestsByText,
   FetchQuestsByCreatorId,
   PublishQuest,
+  PurchaseQuest,
   QuestPurchasedByUser,
 };

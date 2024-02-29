@@ -134,13 +134,15 @@ const TopNavbar = (props) => {
             >
               Quests
             </Navbar.Link>
-            <Navbar.Link
-              href="#"
-              active={window.location.pathname === "/leaderboard"}
-              className="text-xl"
-            >
-              Profile
-            </Navbar.Link>
+            {authSession.role === "manager" && (
+              <Navbar.Link
+                href="/editor"
+                active={window.location.pathname === "/leaderboard"}
+                className="text-xl"
+              >
+                Quest Editor
+              </Navbar.Link>
+            )}
           </Navbar.Collapse>
         </Navbar>
       </div>
