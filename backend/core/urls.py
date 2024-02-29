@@ -67,6 +67,11 @@ urlpatterns = [
         core.views.get_quest_by_createdBy,
         name="get_quest_by_createdBy",
     ),
+    path(
+        "compare/quest/createdBy",
+        core.views.compare_quest_by_createdBy,
+        name="compare_quest_by_createdBy",
+    ),
     # User Quest
     path(
         "purchased/user_quest",
