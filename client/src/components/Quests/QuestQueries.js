@@ -141,7 +141,7 @@ const PublishQuest = ({ questData }) => {
 
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_BACKEND_URL}/api/create/quest`,
+        `${process.env.REACT_APP_BACKEND_URL}/api/create/single_quest_embeddings`,
         queryOptions
       );
 

@@ -1,8 +1,12 @@
-import { Button, Label, Modal, TextInput } from "flowbite-react";
-import { useState, useEffect } from "react";
+import { Modal } from "flowbite-react";
+import { useState, useEffect, useContext } from "react";
 import { FetchLocations } from "../Quests/QuestQueries";
 import { FetchCategories, FetchLocationType } from "./TaskQueries";
 import { Spinner } from "flowbite-react";
+import { CreateTask } from "./TaskQueries";
+import { toast } from "react-toastify";
+import { AuthContext } from "../../App";
+import { useNavigate } from "react-router-dom";
 
 const createTaskTheme = {
   root: {
@@ -47,9 +51,10 @@ const createTaskTheme = {
   header: {
     base: "flex items-start justify-between rounded-t dark:border-gray-600 border-b p-5",
     popup: "p-2 border-b-0",
-    title: "text-xl font-medium text-gray-900 dark:text-white",
+    title:
+      "text-xl font-medium text-gray-900 dark:text-white flex flex-row items-center",
     close: {
-      base: "ml-auto inline-flex items-center rounded-lg bg-transparent p-1.5 text-sm text-gray-400 hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-gray-600 dark:hover:text-white",
+      base: "ml-auto inline-flex items-center rounded-lg bg-white p-1.5 text-sm text-primary-600 hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-gray-600 dark:hover:text-white",
       icon: "h-5 w-5",
     },
   },
@@ -59,26 +64,17 @@ const createTaskTheme = {
   },
 };
 
-function CreateTask() {
-  const [openModal, setOpenModal] = useState(false);
+function CreateTaskModal(props) {
   const [locations, setLocations] = useState([]);
   const [categories, setCategories] = useState([]);
   const [locationTypes, setLocationTypes] = useState([]);
+  const { authSession } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const [submitting, setSubmitting] = useState(false);
 
-  const [formData, setFormData] = useState({
-    taskName: "",
-    taskDescription: "",
-    created_by: "",
-    duration: 0,
-    points: 0,
-
-    // Add more fields as needed
-  });
-
   function onCloseModal() {
-    setOpenModal(false);
+    props.setCreateTaskModal(false);
   }
 
   useEffect(() => {
@@ -127,10 +123,51 @@ function CreateTask() {
       });
   }, []);
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+
+    if (authSession === null || authSession === undefined) {
+      toast.error("Please login to create a task");
+      setSubmitting(false);
+      navigate("/login");
+    }
+
+    const reqData = {
+      creator_id: authSession.uuid,
+      name: e.target[1].value,
+      description: e.target[2].value,
+      points: parseInt(e.target[3].value),
+      duration: parseInt(e.target[4].value),
+      location_id: e.target[5].value,
+      location_type_id: e.target[6].value,
+      category_id: e.target[7].value,
+    };
+    console.log("submitting data : ", reqData);
+
+    CreateTask(reqData)
+      .then((data) => {
+        console.log("CreateTask : ", data);
+        toast.success("Task created successfully");
+        props.setCreateTaskModal(false);
+        setSubmitting(false);
+      })
+      .catch((err) => {
+        toast.error("Error creating task");
+        console.error("CreateTask : ", err);
+        setSubmitting(false);
+      });
+  };
+
   return (
     <>
-      <Button onClick={() => setOpenModal(true)}>Toggle modal</Button>
-      <Modal show={openModal} size="md" onClose={onCloseModal} popup>
+      <Modal
+        show={props.createTaskModal}
+        size="xl"
+        onClose={onCloseModal}
+        theme={createTaskTheme}
+        popup
+      >
         <div className="relative">
           <div
             className="absolute inset-0 bg-cover bg-center opacity-60"
@@ -144,135 +181,167 @@ function CreateTask() {
             Create a New Task
           </Modal.Header>
         </div>
-        <Modal.Body>
-          <div className="space-y-6">
-            <div>
-              <div className="mb-2 block">
-                <Label htmlFor="name" value="Name" />
+        <div className="mx-2 max-h-full flex flex-col p-4 max-w-screen overflow-y-auto max-sm:p-2">
+          <form onSubmit={handleSubmit}>
+            <div className="space-y-3">
+              <div>
+                <div className="mb-1 block">
+                  <label
+                    htmlFor="task-name"
+                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                  >
+                    Task Title
+                  </label>
+                </div>
+                <input
+                  type="text"
+                  id="task-name"
+                  name="task-name"
+                  required
+                  className="active:border-primary-500 w-full p-2 border-2 border-gray-200 rounded-md"
+                />
               </div>
-              <TextInput
-                id="name"
-                placeholder="Enter your task name"
-                required
-              />
-            </div>
-            <div>
-              <div className="mb-2 block">
-                <Label htmlFor="description" value="Description" />
+              <div>
+                <div className="mb-1 block">
+                  <label
+                    htmlFor="questDesc"
+                    className="block mb-1 text-sm font-medium text-gray-900 dark:text-white"
+                  >
+                    Task Description
+                  </label>
+                </div>
+                <textarea
+                  id="questDesc"
+                  name="questDesc"
+                  required
+                  className="w-full p-2 border-2 border-gray-200 rounded-md"
+                />
               </div>
-              <TextInput
-                id="description"
-                type="text"
-                placeholder="Enter you task description"
-                required
-              />
-            </div>
-            <div>
-              <div className="mb-2 block">
-                <Label htmlFor="taskPoints" value="Points" />
+              <div>
+                <div className="inline-block">
+                  <div className="mb-1 block">
+                    <label
+                      htmlFor="task-points"
+                      className="text-center wrap block mb-1 text-sm font-medium text-gray-900 dark:text-white"
+                    >
+                      Task Points <br />
+                      (max 1000)
+                    </label>
+                  </div>
+                  <input
+                    type="number"
+                    id="task-points"
+                    className="w-[100px] p-2 border-2 border-gray-200 rounded-md"
+                    min={0}
+                    max={1000}
+                    required
+                  />
+                </div>
+                <div className="inline-block ml-4">
+                  <div className="mb-1 block">
+                    <label
+                      htmlFor="task-points"
+                      className="text-center block mb-1 text-sm font-medium text-gray-900 dark:text-white"
+                    >
+                      Task Duration <br />
+                      (in days)
+                    </label>
+                  </div>
+                  <input
+                    type="number"
+                    id="task-points"
+                    className="w-[100px] p-2 border-2 border-gray-200 rounded-md"
+                    min={1}
+                    max={20}
+                    required
+                  />
+                </div>
               </div>
-              <TextInput
-                id="taskPoints"
-                type="text"
-                placeholder="Enter your task points"
-                required
-              />
-            </div>
-            <div>
-              <div className="mb-2 block">
-                <label
-                  htmlFor="base-input"
-                  className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              <div>
+                <div className="mb-1 block">
+                  <label
+                    htmlFor="base-input"
+                    className="block mb-1 text-sm font-medium text-gray-900 dark:text-white"
+                  >
+                    Location
+                  </label>
+                </div>
+                <select
+                  id="base-input"
+                  className="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-800 dark:focus:border-primary-800 dark:text-gray-300"
                 >
-                  Location
-                </label>
+                  {locations.map((location, index) => (
+                    <option key={index} value={location.uuid}>
+                      {location.name}
+                    </option>
+                  ))}
+                </select>
               </div>
-              <select
-                id="base-input"
-                className="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-800 dark:focus:border-primary-800 dark:text-gray-300"
-              >
-                {locations.map((location, index) => (
-                  <option key={index} value={location.name}>
-                    {location.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <div className="mb-2 block">
-                <label
-                  htmlFor="locationtype-input"
-                  className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              <div>
+                <div className="mb-1 block">
+                  <label
+                    htmlFor="locationtype-input"
+                    className="block mb-1 text-sm font-medium text-gray-900 dark:text-white"
+                  >
+                    Location Type
+                  </label>
+                </div>
+                <select
+                  id="locationtype-input"
+                  className="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-800 dark:focus:border-primary-800 dark:text-gray-300"
                 >
-                  Location Type
-                </label>
+                  {locationTypes.map((locationType, index) => (
+                    <option key={index} value={locationType.uuid}>
+                      {locationType.name}
+                    </option>
+                  ))}
+                </select>
               </div>
-              <select
-                id="locationtype-input"
-                className="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-800 dark:focus:border-primary-800 dark:text-gray-300"
-              >
-                {locationTypes.map((locationType, index) => (
-                  <option key={index} value={locationType.name}>
-                    {locationType.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <div className="mb-2 block">
-                <label
-                  htmlFor="category-input"
-                  className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              <div>
+                <div className="mb-1 block">
+                  <label
+                    htmlFor="category-input"
+                    className="block mb-1 text-sm font-medium text-gray-900 dark:text-white"
+                  >
+                    Category
+                  </label>
+                </div>
+                <select
+                  id="category-input"
+                  className="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-800 dark:focus:border-primary-800 dark:text-gray-300"
                 >
-                  Category
-                </label>
+                  {categories.map((categories, index) => (
+                    <option key={index} value={categories.uuid}>
+                      {categories.name}
+                    </option>
+                  ))}
+                </select>
               </div>
-              <select
-                id="category-input"
-                className="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-800 dark:focus:border-primary-800 dark:text-gray-300"
-              >
-                {categories.map((categories, index) => (
-                  <option key={index} value={categories.name}>
-                    {categories.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <div className="mb-2 block">
-                <Label htmlFor="creator name" value="Creator Name" />
+              <div className="w-full flex justify-center">
+                <button
+                  type="submit"
+                  className=" text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                >
+                  {submitting ? (
+                    <>
+                      <Spinner
+                        aria-label="Spinner button example"
+                        size="sm"
+                        className="fill-primary-700 text-grey-0"
+                      />
+                      <span className="pl-3">Loading...</span>
+                    </>
+                  ) : (
+                    "Create Task"
+                  )}
+                </button>
               </div>
-              <TextInput
-                id="creator name"
-                type="text"
-                placeholder="Enter your name"
-                required
-              />
             </div>
-            <div className="w-full flex justify-center">
-              <button
-                type="submit"
-                className=" text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-              >
-                {submitting ? (
-                  <>
-                    <Spinner
-                      aria-label="Spinner button example"
-                      size="sm"
-                      className="fill-primary-700 text-grey-0"
-                    />
-                    <span className="pl-3">Loading...</span>
-                  </>
-                ) : (
-                  "Create Task"
-                )}
-              </button>
-            </div>
-          </div>
-        </Modal.Body>
+          </form>
+        </div>
       </Modal>
     </>
   );
 }
 
-export default CreateTask;
+export default CreateTaskModal;
